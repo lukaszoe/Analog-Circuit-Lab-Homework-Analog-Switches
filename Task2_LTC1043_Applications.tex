@@ -1,0 +1,39 @@
+\section{LTC1043 Applications}
+
+The following circuits are described in the LTC1043 datasheet (Applications section). Each exploits the precision switched-capacitor technique of the LTC1043 for a specific analog signal processing function.
+
+\subsection{Instrumentation Amplifier}
+
+The LTC1043-based instrumentation amplifier achieves very high common-mode rejection without requiring tightly matched resistors. The circuit works as follows:
+
+\begin{enumerate}
+	\item The LTC1043's switched-capacitor network samples the differential input voltage $V_{\text{in+}} - V_{\text{in-}}$ during one clock phase and transfers this charge to a single-ended output during the next phase.
+	\item Because the charge transfer is based on capacitor ratios (which can be made very precise on-chip), the common-mode rejection is determined by the matching of the flying capacitors rather than resistor matching.
+	\item A single op-amp at the output amplifies the transferred differential voltage to the desired gain.
+\end{enumerate}
+
+\textbf{Key advantage:} The CMRR is limited primarily by capacitor matching, not resistor matching. This allows CMRR values exceeding \SI{100}{\decibel} without laser-trimmed resistors. The input impedance is also very high (determined by the capacitor leakage, not resistor values), which avoids loading the signal source.
+
+\subsection{Voltage-Controlled Current Source}
+
+The LTC1043 can implement a precision voltage-controlled current source (VCCS):
+
+\begin{enumerate}
+	\item The input voltage is converted to a proportional current through a switched-capacitor resistor equivalent: $R_{\text{eff}} = 1 / (f_{\text{clk}} \cdot C)$.
+	\item The flying capacitor samples the control voltage and transfers charge to a sense resistor, maintaining a current proportional to the input voltage.
+	\item An op-amp in a feedback loop ensures that the voltage across the sense resistor equals the input voltage, thereby setting $I_{\text{out}} = V_{\text{in}} / R_{\text{sense}}$.
+\end{enumerate}
+
+\textbf{Key advantage:} The output current accuracy depends on capacitor matching and clock frequency stability rather than resistor accuracy. This makes the circuit suitable for precision current sourcing in sensor excitation and 4--20\,mA current loops.
+
+\subsection{Frequency-to-Voltage Converter}
+
+The LTC1043 can convert an input frequency to a proportional output voltage:
+
+\begin{enumerate}
+	\item The input frequency signal drives the LTC1043's clock input. Each input pulse triggers one charge-transfer cycle.
+	\item A fixed capacitor $C_{\text{ref}}$ is charged to a reference voltage $V_{\text{ref}}$ during each cycle, and this charge is transferred to an output capacitor $C_{\text{out}}$.
+	\item The average current delivered to the output is $I_{\text{avg}} = V_{\text{ref}} \cdot C_{\text{ref}} \cdot f_{\text{in}}$. A load resistor $R_{\text{load}}$ converts this to a voltage: $V_{\text{out}} = V_{\text{ref}} \cdot C_{\text{ref}} \cdot f_{\text{in}} \cdot R_{\text{load}}$.
+\end{enumerate}
+
+\textbf{Key advantage:} The conversion is inherently linear because each input cycle transfers a fixed quantum of charge. The linearity depends on the stability of $V_{\text{ref}}$, $C_{\text{ref}}$, and the completeness of charge transfer -- not on the linearity of any active device. Output filtering (RC low-pass) smooths the ripple at the output.

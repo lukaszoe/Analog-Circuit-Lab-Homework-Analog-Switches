@@ -1,0 +1,81 @@
+\section{LTC1043 Divider and Multiplier Circuits}
+
+\subsection{Circuit Descriptions}
+
+The LTC1043 is a monolithic switched-capacitor building block that contains dual switched-capacitor networks with an on-chip oscillator and level translators. It enables precision analog signal processing through charge-transfer techniques.
+
+\subsubsection{Multiply-by-2 Circuit}
+
+The multiply-by-2 circuit uses the LTC1043's switched-capacitor network to double the input voltage. During the sample phase, capacitor $C_2$ charges to the input voltage $V_{\text{in}}$. During the transfer phase, $C_2$ is placed in series with $C_3$, which already holds the previous output voltage. Since both capacitors are of equal value, the output voltage doubles:
+\begin{equation}
+	V_{\text{out}} = 2 \cdot V_{\text{in}}
+\end{equation}
+
+The op-amp at the output buffers the voltage and provides a low-impedance output.
+
+\begin{tcolorbox}[colback=yellow!10, colframe=orange, title=SIMULATION PLACEHOLDER]
+	\textbf{[SIMULATION: multiply-by-2 circuit, 1043-M2.asc]} \\
+	Run the LTspice simulation \texttt{1043-M2.asc}. Verify that $V_{\text{out}} = 2 \cdot V_{\text{in}}$ for a slowly varying DC input. Observe the settling behavior and output ripple.
+\end{tcolorbox}
+
+\subsubsection{Divide-by-2 Circuit}
+
+The divide-by-2 circuit halves the input voltage. During the sample phase, $C_2$ charges to $V_{\text{in}}$. During the transfer phase, $C_2$ is connected in parallel with $C_3$, redistributing the charge. With $C_2 = C_3$, the voltage equilibrates to half:
+\begin{equation}
+	V_{\text{out}} = \frac{V_{\text{in}}}{2}
+\end{equation}
+
+\begin{tcolorbox}[colback=yellow!10, colframe=orange, title=SIMULATION PLACEHOLDER]
+	\textbf{[SIMULATION: divide-by-2 circuit, 1043-D2.asc]} \\
+	Run the LTspice simulation \texttt{1043-D2.asc}. Verify that $V_{\text{out}} = V_{\text{in}} / 2$ for a slowly varying DC input. Observe the output settling and residual ripple.
+\end{tcolorbox}
+
+\subsection{Influence of Operating Frequency and ON-Resistance}
+
+\subsubsection{Operating Frequency}
+
+The switching frequency $f_{\text{clk}}$ determines how often charge is transferred between capacitors:
+\begin{itemize}
+	\item \textbf{Higher frequency:} The charge transfer occurs more rapidly, reducing the output ripple and improving settling time. The effective resistance of the switched-capacitor network is $R_{\text{eff}} = 1 / (f_{\text{clk}} \cdot C)$, so a higher frequency lowers this equivalent resistance, making the circuit behave more like an ideal resistive divider.
+	\item \textbf{Lower frequency:} The output has more time to drift between charge transfers, increasing ripple and settling time. If the frequency is too low relative to the input signal bandwidth, the circuit cannot track the input accurately, causing signal distortion.
+\end{itemize}
+
+In practice, the frequency must be significantly higher than the signal bandwidth (typically $> 50\times$) to ensure proper operation.
+
+\begin{tcolorbox}[colback=yellow!10, colframe=orange, title=SIMULATION PLACEHOLDER]
+	\textbf{[SIMULATION: frequency sweep showing impact of $R_{\text{on}}$]} \\
+	Simulate the multiply-by-2 or divide-by-2 circuit at different clock frequencies (e.g., \SI{1}{\kilo\hertz}, \SI{10}{\kilo\hertz}, \SI{100}{\kilo\hertz}) and with different $R_{\text{on}}$ values (e.g., \SI{0}{\ohm}, \SI{100}{\ohm}, \SI{1}{\kilo\ohm}). Observe how the output accuracy and ripple change with each parameter.
+\end{tcolorbox}
+
+\subsubsection{ON-Resistance ($R_{\text{on}}$)}
+
+The MOS switches inside the LTC1043 have a finite ON-resistance $R_{\text{on}}$, which affects the charge transfer:
+\begin{itemize}
+	\item \textbf{Non-zero $R_{\text{on}}$:} The RC time constant $\tau = R_{\text{on}} \cdot C$ limits how quickly the capacitor can charge during each switching phase. If $\tau$ is not much smaller than the switching period $T_{\text{clk}} / 2$, the capacitor does not fully charge, introducing a gain error.
+	\item \textbf{Effect on accuracy:} The output voltage deviates from the ideal ratio when charge transfer is incomplete. The error is approximately proportional to $\exp(-T_{\text{clk}} / (2\tau))$, so both lower $R_{\text{on}}$ and higher $f_{\text{clk}}$ improve accuracy (as long as $\tau \ll T_{\text{clk}}/2$).
+\end{itemize}
+
+\subsection{Impact of Mismatched Capacitors ($C_2 \neq C_3$)}
+
+When the capacitors $C_2$ and $C_3$ are not identical, the charge redistribution is no longer symmetrical:
+
+\subsubsection{Multiply-by-2 Circuit}
+With $C_2 \neq C_3$, the output is:
+\begin{equation}
+	V_{\text{out}} = V_{\text{in}} \cdot \left(1 + \frac{C_2}{C_3}\right)
+\end{equation}
+If $C_2 = C_3$, this reduces to $2 \cdot V_{\text{in}}$. A mismatch causes a gain error -- the multiplication factor is no longer exactly 2.
+
+\subsubsection{Divide-by-2 Circuit}
+With $C_2 \neq C_3$, the parallel charge sharing gives:
+\begin{equation}
+	V_{\text{out}} = V_{\text{in}} \cdot \frac{C_2}{C_2 + C_3}
+\end{equation}
+Only when $C_2 = C_3$ does this yield $V_{\text{in}} / 2$. A capacitor mismatch directly translates to a division ratio error.
+
+In both cases, mismatched capacitors cause a gain error proportional to the relative mismatch $\Delta C / C$. This is why precision applications require matched capacitors (e.g., \SI{0.01}{\percent} matching for \SI{12}{bit} accuracy) or trimming.
+
+\begin{tcolorbox}[colback=yellow!10, colframe=orange, title=SIMULATION PLACEHOLDER]
+	\textbf{[SIMULATION: impact of mismatched capacitors $C_2$ and $C_3$]} \\
+	Simulate the circuits with $C_2 \neq C_3$ (e.g., $C_2 = \SI{1}{\micro\farad}$, $C_3 = \SI{0.9}{\micro\farad}$). Observe the deviation from the ideal multiplication/division ratio and compare with the theoretical predictions above.
+\end{tcolorbox}
