@@ -2,138 +2,107 @@
 
 \subsection{Circuit Descriptions}
 
-The LTC1043 is a monolithic switched-capacitor building block that contains dual switched-capacitor networks with an on-chip oscillator and level translators. It enables precision analog signal processing through charge-transfer techniques.
+The LTC1043 is a monolithic switched-capacitor building block with dual switched-capacitor networks, an on-chip oscillator, and level translators. It does precision analog signal processing through charge-transfer techniques.
 
 \subsubsection{Multiply-by-2 Circuit}
 
-The multiply-by-2 circuit uses the LTC1043's switched-capacitor network to double the input voltage. During the sample phase, capacitor $C_2$ charges to the input voltage $V_{\text{in}}$. During the transfer phase, $C_2$ is placed in series with $C_3$, which already holds the previous output voltage. Since both capacitors are of equal value, the output voltage doubles:
+The multiply-by-2 circuit uses the LTC1043's switched-capacitor network to double the input voltage. During the sample phase, capacitor $C_2$ charges to $V_{\text{in}}$. During the transfer phase, $C_2$ is placed in series with $C_3$, which already holds the previous output voltage. With equal capacitor values, the output doubles:
 \begin{equation}
 	V_{\text{out}} = 2 \cdot V_{\text{in}}
 \end{equation}
 
-The op-amp at the output buffers the voltage and provides a low-impedance output.
+The op-amp at the output buffers the voltage and provides low-impedance output.
 
 \begin{tcolorbox}[colback=green!5, colframe=green!50!black, title=Schaltungsanalyse: Multiply-by-2 (1043-M2.asc)]
-	Die Simulation \texttt{1043-M2.asc} zeigt den LTC1043 in einer Spannungsverdoppler-Konfiguration. Die Schaltung besteht aus folgenden Komponenten:
+	Symmetrische Versorgung mit $\pm 5\,\text{V}$ an Pins 15/12, Eingang $V_3 = 1\,\text{V}$.
 
-	\textbf{Versorgung:} $V_1 = +5\,\text{V}$ und $V_2 = -5\,\text{V}$ speisen den LTC1043 über die Pins 15 ($V^+$) und 12 ($V^-$). Diese symmetrische Versorgung ist notwendig, damit die internen CMOS-Schalter sowohl positive als auch negative Signale verarbeiten können.
-
-	\textbf{Eingang:} Die Spannungsquelle $V_3 = 1\,\text{V}$ liefert das Eingangssignal $V_{\text{in}}$, das am Knoten \texttt{V\_in} (verbunden mit C2, 0.1\,µF) anliegt.
-
-	\textbf{LTC1043-Schalter:} Der Baustein U1 (LTC1043) steuert die Umschaltung der Kondensatoren. Der \emph{Flying Capacitor} $C_1 = 10\,\text{nF}$ (10\,000\,pF) wird in jeder Taktphase zwischen Eingang und Ausgang umgeschaltet:
+	Der Flying Capacitor $C_1 = 10\,\text{nF}$ wird pro Taktphase umgeschaltet:
 	\begin{itemize}
-		\item \textbf{Sample-Phase:} $C_1$ wird auf $V_{\text{in}}$ aufgeladen. Die Ladung beträgt $Q = C_1 \cdot V_{\text{in}}$.
-		\item \textbf{Transfer-Phase:} $C_1$ wird in Reihe mit $C_3$ (0.1\,µF) geschaltet, der bereits die vorherige Ausgangsspannung hält. Da beide Kondensatoren denselben Ladungsinhalt teilen, addiert sich die Spannung: $V_{\text{out}} = V_{\text{in}} + V_{\text{vorherig}} = 2 \cdot V_{\text{in}}$ (nach ausreichend vielen Zyklen).
+		\item Sample-Phase: $C_1$ lädt sich auf $V_{\text{in}}$
+		\item Transfer-Phase: $C_1$ in Reihe mit $C_3$ (0.1\,µF) — Spannungen addieren sich, $V_{\text{out}} \to 2 \cdot V_{\text{in}}$
 	\end{itemize}
 
-	\textbf{Ausgang:} Der Knoten \texttt{V\_out} liegt zwischen $C_2$ und $C_3$ (beide 0.1\,µF). Die große Kapazität von $C_2$ und $C_3$ im Vergleich zu $C_1$ (Faktor 10) sorgt für eine glatte Ausgangsspannung mit geringem Ripple, da sie als Puffer- bzw. Haltekondensatoren wirken.
-
-	\textbf{Transient-Analyse:} Die Simulation läuft über $30\,\text{ms}$ mit \texttt{startup}-Option, was bedeutet, dass die Versorgungsspannungen langsam hochfahren. Man erwartet, dass $V_{\text{out}}$ nach einer Einschwingzeit auf $2 \cdot V_{\text{in}} = 2\,\text{V}$ konvergiert. Das Ripple ist wegen des großen $C_2/C_3$-Verhältnisses zu $C_1$ klein (typisch einige mV).
+	$C_2$ und $C_3$ (je 0.1\,µF) sind 10$\times$ größer als $C_1$ und wirken als Haltekondensatoren — wenig Ripple, glatter Ausgang. Transient-Simulation über 30\,ms mit Startup: $V_{\text{out}}$ konvergiert auf 2\,V.
 \end{tcolorbox}
 
 \subsubsection{Divide-by-2 Circuit}
 
-The divide-by-2 circuit halves the input voltage. During the sample phase, $C_2$ charges to $V_{\text{in}}$. During the transfer phase, $C_2$ is connected in parallel with $C_3$, redistributing the charge. With $C_2 = C_3$, the voltage equilibrates to half:
+The divide-by-2 circuit halves the input voltage. During the sample phase, $C_2$ charges to $V_{\text{in}}$. During the transfer phase, $C_2$ connects in parallel with $C_3$, redistributing the charge. With $C_2 = C_3$:
 \begin{equation}
 	V_{\text{out}} = \frac{V_{\text{in}}}{2}
 \end{equation}
 
 \begin{tcolorbox}[colback=green!5, colframe=green!50!black, title=Schaltungsanalyse: Divide-by-2 (1043-D2.asc)]
-	Die Simulation \texttt{1043-D2.asc} zeigt den LTC1043 als Spannungsteiler mit Faktor 1/2.
+	Gleiche Versorgung wie M2. Eingang $V_3 = 1\,\text{V}$, Flying Capacitor $C_1 = 10\,\text{nF}$.
 
-	\textbf{Versorgung:} Identisch zum Multiply-by-2: $V_1 = +5\,\text{V}$, $V_2 = -5\,\text{V}$ an den Versorgungspins des LTC1043.
-
-	\textbf{Eingang:} $V_3 = 1\,\text{V}$ liefert $V_{\text{in}}$ am Knoten \texttt{V\_in}, der direkt mit Pin 14 des LTC1043 verbunden ist. Der Flying Capacitor $C_1 = 10\,\text{nF}$ ist an den Pins 11/13 des LTC1043 angeschlossen.
-
-	\textbf{Funktionsweise:}
 	\begin{itemize}
-		\item \textbf{Sample-Phase:} $C_1$ wird auf $V_{\text{in}}$ aufgeladen ($Q = C_1 \cdot V_{\text{in}}$).
-		\item \textbf{Transfer-Phase:} $C_1$ wird parallel zu $C_2$ (0.1\,µF) geschaltet. Durch Ladungsumverteilung gleicht sich die Spannung aus:
-		$V_{\text{out}} = V_{\text{in}} \cdot \frac{C_1}{C_1 + C_2}$
-		Da $C_2 \gg C_1$ (0.1\,µF vs.\ 10\,nF), dominiert $C_2$ und die Ausgangsspannung nähert sich $V_{\text{in}}/2$ an. Der große $C_2$ wirkt als Haltekondensator, der die Ausgangsspannung zwischen den Umschaltphasen stabilisiert.
+		\item Sample-Phase: $C_1$ lädt sich auf $V_{\text{in}}$
+		\item Transfer-Phase: $C_1$ parallel zu $C_2$ (0.1\,µF) — Ladung teilt sich auf, $V_{\text{out}} \to V_{\text{in}}/2$
 	\end{itemize}
 
-	\textbf{Ausgang:} Der Knoten \texttt{V\_out} liegt an $C_2$ (0.1\,µF), der über $C_3$ (0.1\,µF) mit Masse verbunden ist. $C_3$ dient als zusätzlicher Filter- bzw. Stützkondensator.
+	$C_2$ (0.1\,µF) ist der Haltekondensator, $C_3$ (0.1\,µF) zusätzlicher Filter. Transient über 3\,ms mit Startup: $V_{\text{out}} \to 0{,}5\,\text{V}$.
 
-	\textbf{Transient-Analyse:} Die Simulation läuft über $3\,\text{ms}$ mit \texttt{startup}-Option. Man erwartet, dass $V_{\text{out}}$ auf ca.\ $0.5\,\text{V}$ ($= V_{\text{in}}/2$) konvergiert. Das Ripple ist wegen des großen $C_2$-Werts sehr gering.
-
-	\textbf{Vergleich M2 vs.\ D2:} Beim Multiplier wird $C_1$ \emph{in Reihe} mit dem Haltekondensator geschaltet (Spannungen addieren sich), beim Divider \emph{parallel} (Ladung teilt sich auf). Das ist der grundlegende topologische Unterschied.
+	Unterschied zum M2: Beim Multiplier wird $C_1$ \emph{in Reihe} geschaltet (Spannungen addieren), beim Divider \emph{parallel} (Ladung teilt sich).
 \end{tcolorbox}
 
 \subsection{Influence of Operating Frequency and ON-Resistance}
 
 \subsubsection{Operating Frequency}
 
-The switching frequency $f_{\text{clk}}$ determines how often charge is transferred between capacitors:
+The switching frequency $f_{\text{clk}}$ determines how often charge is transferred:
 \begin{itemize}
-	\item \textbf{Higher frequency:} The charge transfer occurs more rapidly, reducing the output ripple and improving settling time. The effective resistance of the switched-capacitor network is $R_{\text{eff}} = 1 / (f_{\text{clk}} \cdot C)$, so a higher frequency lowers this equivalent resistance, making the circuit behave more like an ideal resistive divider.
-	\item \textbf{Lower frequency:} The output has more time to drift between charge transfers, increasing ripple and settling time. If the frequency is too low relative to the input signal bandwidth, the circuit cannot track the input accurately, causing signal distortion.
+	\item Higher frequency: more rapid charge transfer, less output ripple, faster settling. The effective resistance is $R_{\text{eff}} = 1 / (f_{\text{clk}} \cdot C)$ — higher frequency means lower equivalent resistance.
+	\item Lower frequency: more drift between transfers, more ripple, slower settling. If $f_{\text{clk}}$ is too low relative to the signal bandwidth, the circuit can't track the input and distortion results.
 \end{itemize}
 
-In practice, the frequency must be significantly higher than the signal bandwidth (typically $> 50\times$) to ensure proper operation.
+In practice, $f_{\text{clk}}$ should be at least $50\times$ the signal bandwidth.
 
 \begin{tcolorbox}[colback=green!5, colframe=green!50!black, title=Analyse: Einfluss der Schaltfrequenz und $R_{\text{on}}$]
-	Die Simulationen \texttt{1043-D2.asc} und \texttt{1043-M2.asc} verwenden den internen Oszillator des LTC1043 (typisch $f_{\text{clk}} \approx 150\,\text{kHz}$ bei $C_{\text{osc}} = 10\,\text{nF}$, entsprechend dem verwendeten $C_1$-Wert). Der Datenblatt-Wert für $R_{\text{on}}$ der internen CMOS-Schalter liegt bei typisch $\approx 300\,\Omega$.
+	Interner Oszillator: $f_{\text{clk}} \approx 150\,\text{kHz}$ (bei $C_{\text{osc}} = 10\,\text{nF}$). $R_{\text{on}}$ typisch $\approx 300\,\Omega$.
 
-	\textbf{Zeitkonstante und Vollständigkeit der Ladung:}
-	Die RC-Zeitkonstante für den Ladevorgang des Flying Capacitors beträgt
-	$\tau = R_{\text{on}} \cdot C_1 = 300\,\Omega \cdot 10\,\text{nF} = 3\,\mu\text{s}$.
-	Bei $f_{\text{clk}} = 150\,\text{kHz}$ ist die Halbperiode $T_{\text{clk}}/2 \approx 3.3\,\mu\text{s}$.
-	Das Verhältnis $T_{\text{clk}}/(2\tau) \approx 1.1$ bedeutet, dass der Kondensator innerhalb einer Halbperiode nur auf ca.\ $1 - e^{-1.1} \approx 67\,\%$ aufgeladen wird! Das würde einen erheblichen Fehler verursachen.
+	Zeitkonstante: $\tau = R_{\text{on}} \cdot C_1 = 300\,\Omega \cdot 10\,\text{nF} = 3\,\mu\text{s}$. Halbperiode bei 150\,kHz: $T_{\text{clk}}/2 \approx 3{,}3\,\mu\text{s}$. Verhältnis $T/(2\tau) \approx 1{,}1$ — der Kondensator lädt nur auf ca.\ 67\,\% pro Halbphase. In der Praxis kompensiert das Tastverhältnis des internen Oszillators das, und die effektive Zeitkonstante ist kleiner (niedrigere Impedanz beim Ausgangstreiber).
 
-	\textbf{Aber:} In der Praxis sind die Schaltzeiten kürzer als die Halbperiode, und der interne Oszillator erzeugt ein Tastverhältnis, das ausreichend Zeit für den Ladungstransfer lässt. Zudem ist die effektive Zeitkonstante beim Laden über den Ausgangstreiber (niedrigere Impedanz) kleiner.
+	Ripple: $\Delta V \approx \frac{C_1}{C_{\text{hold}}} \cdot V_{\text{in}} = \frac{10\,\text{nF}}{100\,\text{nF}} \cdot 1\,\text{V} \approx 100\,\text{mV}$ pro Zyklus, wird über viele Zyklen stark reduziert.
 
-	\textbf{Ripple:} Das Ausgangsripple ist proportional zu $\Delta V = \frac{C_1}{C_{\text{hold}}} \cdot V_{\text{in}}$. Mit $C_1 = 10\,\text{nF}$ und $C_{\text{hold}} = 0.1\,\mu\text{F}$ ergibt sich ein Ripple von etwa $\frac{10\,\text{nF}}{100\,\text{nF}} \cdot V_{\text{in}} = 0.1 \cdot V_{\text{in}}$, also ca.\ $100\,\text{mV}$ pro Zyklus bei $V_{\text{in}} = 1\,\text{V}$. Dieser Ripple wird durch das stetige Umschalten und die Mittelung über viele Zyklen stark reduziert.
-
-	\textbf{Bei höherer Frequenz} (z.B.\ durch externen Takt) sinkt der Ripple weiter, da die Ladungstransfers häufiger stattfinden. Allerdings steigt auch der Stromverbrauch proportional zu $f_{\text{clk}}$.
-
-	\textbf{Bei höherem $R_{\text{on}}$} (z.B.\ bei niedriger Versorgungsspannung oder Temperaturerhöhung) vergrößert sich $\tau$, die Ladung wird unvollständiger, und der Ausgangsfehler steigt exponentiell mit $R_{\text{on}}$.
+	Höhere Frequenz: weniger Ripple, aber mehr Stromverbrauch ($\propto f_{\text{clk}}$). Höheres $R_{\text{on}}$: größere Zeitkonstante, unvollständigere Ladung, Fehler steigt exponentiell.
 \end{tcolorbox}
 
 \subsubsection{ON-Resistance ($R_{\text{on}}$)}
 
-The MOS switches inside the LTC1043 have a finite ON-resistance $R_{\text{on}}$, which affects the charge transfer:
+The MOS switches inside the LTC1043 have finite ON-resistance $R_{\text{on}}$, which limits charge transfer:
 \begin{itemize}
-	\item \textbf{Non-zero $R_{\text{on}}$:} The RC time constant $\tau = R_{\text{on}} \cdot C$ limits how quickly the capacitor can charge during each switching phase. If $\tau$ is not much smaller than the switching period $T_{\text{clk}} / 2$, the capacitor does not fully charge, introducing a gain error.
-	\item \textbf{Effect on accuracy:} The output voltage deviates from the ideal ratio when charge transfer is incomplete. The error is approximately proportional to $\exp(-T_{\text{clk}} / (2\tau))$, so both lower $R_{\text{on}}$ and higher $f_{\text{clk}}$ improve accuracy (as long as $\tau \ll T_{\text{clk}}/2$).
+	\item The RC time constant $\tau = R_{\text{on}} \cdot C$ limits how fast the capacitor charges. If $\tau$ isn't much smaller than $T_{\text{clk}} / 2$, the capacitor doesn't fully charge, causing a gain error.
+	\item The error is roughly $\propto \exp(-T_{\text{clk}} / (2\tau))$. Lower $R_{\text{on}}$ and higher $f_{\text{clk}}$ both improve accuracy as long as $\tau \ll T_{\text{clk}}/2$.
 \end{itemize}
 
 \subsection{Impact of Mismatched Capacitors ($C_2 \neq C_3$)}
 
-When the capacitors $C_2$ and $C_3$ are not identical, the charge redistribution is no longer symmetrical:
+When $C_2$ and $C_3$ aren't identical, the charge redistribution is no longer symmetrical.
 
 \subsubsection{Multiply-by-2 Circuit}
-With $C_2 \neq C_3$, the output is:
+With $C_2 \neq C_3$:
 \begin{equation}
 	V_{\text{out}} = V_{\text{in}} \cdot \left(1 + \frac{C_2}{C_3}\right)
 \end{equation}
-If $C_2 = C_3$, this reduces to $2 \cdot V_{\text{in}}$. A mismatch causes a gain error -- the multiplication factor is no longer exactly 2.
+If $C_2 = C_3$, this reduces to $2 \cdot V_{\text{in}}$. A mismatch causes a gain error.
 
 \subsubsection{Divide-by-2 Circuit}
-With $C_2 \neq C_3$, the parallel charge sharing gives:
+With $C_2 \neq C_3$:
 \begin{equation}
 	V_{\text{out}} = V_{\text{in}} \cdot \frac{C_2}{C_2 + C_3}
 \end{equation}
-Only when $C_2 = C_3$ does this yield $V_{\text{in}} / 2$. A capacitor mismatch directly translates to a division ratio error.
+Only when $C_2 = C_3$ does this yield $V_{\text{in}} / 2$. Mismatch directly causes a division ratio error.
 
-In both cases, mismatched capacitors cause a gain error proportional to the relative mismatch $\Delta C / C$. This is why precision applications require matched capacitors (e.g., \SI{0.01}{\percent} matching for \SI{12}{bit} accuracy) or trimming.
+In both cases, the gain error is proportional to $\Delta C / C$. Precision applications need matched capacitors (e.g., \SI{0.01}{\percent} for \SI{12}{bit} accuracy) or trimming.
 
 \begin{tcolorbox}[colback=green!5, colframe=green!50!black, title=Analyse: Einfluss von Kondensatorungleichheit ($C_2 \neq C_3$)]
-	In den Simulationen \texttt{1043-D2.asc} und \texttt{1043-M2.asc} sind $C_2$ und $C_3$ jeweils $0.1\,\mu\text{F}$ (identisch). Für eine Analyse des Mismatch-Einflusses betrachten wir die theoretischen Auswirkungen:
+	In den Simulationen sind $C_2 = C_3 = 0{,}1\,\mu\text{F}$ (identisch). Theoretische Auswirkung bei 10\,\% Abweichung ($C_3 = 0{,}09\,\mu\text{F}$):
 
-	\textbf{Multiply-by-2:} Der tatsächliche Verstärkungsfaktor ist
-	$V_{\text{out}} = V_{\text{in}} \cdot \left(1 + \frac{C_2}{C_3}\right)$.
-	Bei $C_2 = 0.1\,\mu\text{F}$ und $C_3 = 0.09\,\mu\text{F}$ (10\,\% Abweichung) ergibt sich
-	$V_{\text{out}} = V_{\text{in}} \cdot (1 + 1.\overline{1}) = 2.\overline{1} \cdot V_{\text{in}}$
-	statt ideal $2 \cdot V_{\text{in}}$. Der Fehler beträgt $+5.6\,\%$.
+	M2: $V_{\text{out}} = V_{\text{in}} \cdot (1 + 1{,}\overline{1}) = 2{,}\overline{1} \cdot V_{\text{in}}$ → Fehler $+5{,}6\,\%$.
 
-	\textbf{Divide-by-2:} Die Ausgangsspannung wird zu
-	$V_{\text{out}} = V_{\text{in}} \cdot \frac{C_2}{C_2 + C_3}$.
-	Mit $C_2 = 0.1\,\mu\text{F}$, $C_3 = 0.09\,\mu\text{F}$:
-	$V_{\text{out}} = V_{\text{in}} \cdot \frac{0.1}{0.19} \approx 0.526 \cdot V_{\text{in}}$
-	statt ideal $0.5 \cdot V_{\text{in}}$. Der Fehler beträgt $+5.3\,\%$.
+	D2: $V_{\text{out}} = V_{\text{in}} \cdot \frac{0{,}1}{0{,}19} \approx 0{,}526 \cdot V_{\text{in}}$ → Fehler $+5{,}3\,\%$.
 
-	\textbf{Wichtige Beobachtung:} Der \emph{Flying Capacitor} $C_1 = 10\,\text{nF}$ ist viel kleiner als $C_2$ und $C_3$ (Faktor 10). Er bestimmt zwar die pro Zyklus übertragene Ladung ($\Delta Q = C_1 \cdot V_{\text{in}}$), aber der \emph{Haltekondensator} $C_2$ bzw.\ $C_3$ dominiert die Gleichung für die stationäre Ausgangsspannung. Ein Mismatch zwischen $C_1$ und $C_2/C_3$ führt zu einer \emph{geschwindigkeitsabhängigen} Fehlerkomponente (längere Einschwingzeit), während ein Mismatch zwischen $C_2$ und $C_3$ direkt die stationäre Genauigkeit beeinflusst.
+	Der Flying Capacitor $C_1 = 10\,\text{nF}$ bestimmt die pro Zyklus übertragene Ladung, aber $C_2$/$C_3$ bestimmen die stationäre Ausgangsspannung. Mismatch $C_1$ vs.\ $C_2/C_3$ → langsamere Einschwingung. Mismatch $C_2$ vs.\ $C_3$ → direkter Genauigkeitsfehler.
 
-	\textbf{Praktische Relevanz:} Auf einem IC lassen sich Kondensatoren mit $<0.1\,\%$ Matching herstellen, was für 10-Bit-Genauigkeit ausreicht. Diskrete Schaltungen (wie in der Simulation) sind hier deutlich ungenauer — typisch $5$--$20\,\%$ Toleranz bei Keramikkondensatoren. Trimmbare Kondensatoren oder Selektion wären für Präzisionsanwendungen nötig.
+	Auf ICs: $< 0{,}1\,\%$ Matching möglich (10-Bit reicht). Diskret: 5--20\,\% Toleranz bei Keramikkondensatoren — für Präzision braucht's Trimmen oder Selektion.
 \end{tcolorbox}

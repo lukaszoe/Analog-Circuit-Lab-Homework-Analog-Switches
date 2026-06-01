@@ -1,134 +1,88 @@
 \section{LTC1043 Applications}
 
-The following circuits are described in the LTC1043 datasheet (Applications section). Each exploits the precision switched-capacitor technique of the LTC1043 for a specific analog signal processing function.
+The following circuits are from the LTC1043 datasheet (Applications section). Each uses the LTC1043's precision switched-capacitor technique for a specific analog signal processing function.
 
 \subsection{Instrumentation Amplifier}
 
-The LTC1043-based instrumentation amplifier achieves very high common-mode rejection without requiring tightly matched resistors. The circuit works as follows:
+The LTC1043-based instrumentation amp achieves high CMRR without tightly matched resistors. The LTC1043's switched-capacitor network samples the differential input $V_{\text{in+}} - V_{\text{in-}}$ during one clock phase and transfers this charge to a single-ended output in the next phase. Because the charge transfer relies on capacitor ratios (which can be made very precise on-chip), CMRR depends on capacitor matching, not resistor matching. A single op-amp at the output amplifies the transferred voltage to the desired gain.
 
-\begin{enumerate}
-	\item The LTC1043's switched-capacitor network samples the differential input voltage $V_{\text{in+}} - V_{\text{in-}}$ during one clock phase and transfers this charge to a single-ended output during the next phase.
-	\item Because the charge transfer is based on capacitor ratios (which can be made very precise on-chip), the common-mode rejection is determined by the matching of the flying capacitors rather than resistor matching.
-	\item A single op-amp at the output amplifies the transferred differential voltage to the desired gain.
-\end{enumerate}
-
-\textbf{Key advantage:} The CMRR is limited primarily by capacitor matching, not resistor matching. This allows CMRR values exceeding \SI{100}{\decibel} without laser-trimmed resistors. The input impedance is also very high (determined by the capacitor leakage, not resistor values), which avoids loading the signal source.
+\textbf{Key advantage:} CMRR is limited by capacitor matching, not resistor matching — values exceeding \SI{100}{\decibel} are possible without laser-trimmed resistors. Input impedance is also very high (set by capacitor leakage, not resistor values), so the signal source isn't loaded.
 
 \subsection{Voltage-Controlled Current Source}
 
-The LTC1043 can implement a precision voltage-controlled current source (VCCS):
+The LTC1043 can implement a precision VCCS. The input voltage converts to a proportional current through a switched-capacitor resistor equivalent: $R_{\text{eff}} = 1 / (f_{\text{clk}} \cdot C)$. The flying capacitor samples the control voltage and transfers charge to a sense resistor. An op-amp in feedback ensures the voltage across the sense resistor equals the input voltage, giving $I_{\text{out}} = V_{\text{in}} / R_{\text{sense}}$.
 
-\begin{enumerate}
-	\item The input voltage is converted to a proportional current through a switched-capacitor resistor equivalent: $R_{\text{eff}} = 1 / (f_{\text{clk}} \cdot C)$.
-	\item The flying capacitor samples the control voltage and transfers charge to a sense resistor, maintaining a current proportional to the input voltage.
-	\item An op-amp in a feedback loop ensures that the voltage across the sense resistor equals the input voltage, thereby setting $I_{\text{out}} = V_{\text{in}} / R_{\text{sense}}$.
-\end{enumerate}
-
-\textbf{Key advantage:} The output current accuracy depends on capacitor matching and clock frequency stability rather than resistor accuracy. This makes the circuit suitable for precision current sourcing in sensor excitation and 4--20\,mA current loops.
+\textbf{Key advantage:} Output current accuracy depends on capacitor matching and clock frequency stability rather than resistor accuracy — suitable for precision current sourcing in sensor excitation and 4--20\,mA loops.
 
 \subsection{Frequency-to-Voltage Converter}
 
-The LTC1043 can convert an input frequency to a proportional output voltage:
+The LTC1043 converts an input frequency to a proportional output voltage. The input frequency drives the clock input — each pulse triggers one charge-transfer cycle. A fixed capacitor $C_{\text{ref}}$ charges to $V_{\text{ref}}$ per cycle, and this charge transfers to $C_{\text{out}}$. The average current is $I_{\text{avg}} = V_{\text{ref}} \cdot C_{\text{ref}} \cdot f_{\text{in}}$, and a load resistor converts it: $V_{\text{out}} = V_{\text{ref}} \cdot C_{\text{ref}} \cdot f_{\text{in}} \cdot R_{\text{load}}$.
 
-\begin{enumerate}
-	\item The input frequency signal drives the LTC1043's clock input. Each input pulse triggers one charge-transfer cycle.
-	\item A fixed capacitor $C_{\text{ref}}$ is charged to a reference voltage $V_{\text{ref}}$ during each cycle, and this charge is transferred to an output capacitor $C_{\text{out}}$.
-	\item The average current delivered to the output is $I_{\text{avg}} = V_{\text{ref}} \cdot C_{\text{ref}} \cdot f_{\text{in}}$. A load resistor $R_{\text{load}}$ converts this to a voltage: $V_{\text{out}} = V_{\text{ref}} \cdot C_{\text{ref}} \cdot f_{\text{in}} \cdot R_{\text{load}}$.
-\end{enumerate}
-
-\textbf{Key advantage:} The conversion is inherently linear because each input cycle transfers a fixed quantum of charge. The linearity depends on the stability of $V_{\text{ref}}$, $C_{\text{ref}}$, and the completeness of charge transfer -- not on the linearity of any active device. Output filtering (RC low-pass) smooths the ripple at the output.
+\textbf{Key advantage:} The conversion is inherently linear because each cycle transfers a fixed charge quantum. Linearity depends on the stability of $V_{\text{ref}}$, $C_{\text{ref}}$, and charge-transfer completeness — not on the linearity of any active device. An RC low-pass at the output smooths the ripple.
 
 \section{Weitere Schaltungsanalysen (Visual Inspection)}
 
-Die folgenden Schaltungen stammen aus den LTspice-Dateien \texttt{Diode-Quartet.asc} und \texttt{Switched-C.asc}. Sie enthalten keinen LTC1043, sondern demonstrieren andere Aspekte von analogen Schaltern und Dioden. Die Analyse erfolgt durch \emph{visual inspection} der Schaltpläne, wie vom LV-Leiter empfohlen.
+Die folgenden Schaltungen stammen aus den LTspice-Dateien \texttt{Diode-Quartet.asc} und \texttt{Switched-C.asc}. Sie enthalten keinen LTC1043, sondern demonstrieren andere Aspekte von analogen Schaltern und Dioden. Analyse durch \emph{visual inspection} der Schaltpläne, wie vom LV-Leiter empfohlen.
 
 \subsection{Diode-Quartet (Diode-Quartet.asc)}
 
 \subsubsection{Topologie und Komponenten}
 
-Die Schaltung \texttt{Diode-Quartet.asc} enthält sechs Dioden (D1--D6), zwei Spannungsquellen für die Versorgung ($V_1 = +5\,\text{V}$, $V_2 = -5\,\text{V}$), eine Wechselspannungsquelle $V_3 = \text{SINE}(0,\,1,\,1\,\text{MHz})$ mit AC\,1, zwei Widerstände $R_1 = R_2 = 50\,\Omega$, zwei Stromquellen $I_1 = I_2 = 10\,\text{mA}$ und zwei zusätzliche Spannungsquellen $V_6 = +5\,\text{V}$, $V_7 = -5\,\text{V}$.
+Sechs Dioden (D1--D6), $\pm 5\,\text{V}$ Versorgung, Wechselspannung $V_3 = \text{SINE}(0,\,1,\,1\,\text{MHz})$ mit AC\,1, $R_1 = R_2 = 50\,\Omega$, Stromquellen $I_1 = I_2 = 10\,\text{mA}$, und $V_6 = +5\,\text{V}$, $V_7 = -5\,\text{V}$.
 
 \subsubsection{Schaltungsanalyse}
 
-\textbf{Diodenbrücke (D1--D4):} Die vier Dioden D1, D2, D3, D4 sind in einer \emph{Graetz-Brückengleichrichter}-Topologie angeordnet. Dies ist die klassische Vollweggleichrichterschaltung:
-\begin{itemize}
-\item In der positiven Halbwelle von $V_3$ leiten D1 und D2, während D3 und D4 sperren. Der Strom fließt über $R_1 \to D_1 \to \text{Last} \to D_2$.
-\item In der negativen Halbwelle leiten D3 und D4, während D1 und D2 sperren. Der Strom fließt über $R_1 \to D_3 \to \text{Last} \to D_4$.
-\end{itemize}
-Das Ergebnis ist ein gleichgerichteter Strom durch die Last, der immer in dieselbe Richtung fließt — unabhängig von der Polarität des Eingangssignals.
+\textbf{Diodenbrücke (D1--D4):} Graetz-Vollweggleichrichter. Positive Halbwelle: D1/D2 leiten, D3/D4 sperren. Negative Halbwelle: D3/D4 leiten, D1/D2 sperren. Ergebnis: gleichgerichteter Strom durch die Last, unabhängig von der Eingangspolarität.
 
-\textbf{Eingang:} $V_3$ erzeugt ein Sinussignal mit $1\,\text{V}$ Amplitude bei $1\,\text{MHz}$. Der Serienwiderstand $R_1 = 50\,\Omega$ entspricht einem typischen 50\,$\Omega$-System (Koaxkabel-Impedanz). Er begrenzt den Eingangsstrom und dient als Quellenimpedanz.
+\textbf{Eingang:} $V_3$ liefert 1\,V bei 1\,MHz. $R_1 = 50\,\Omega$ — typische 50\,$\Omega$-Quellenimpedanz, begrenzt den Eingangsstrom.
 
-\textbf{Ausgang:} Der Lastwiderstand $R_2 = 50\,\Omega$ ist am Knoten \texttt{V\_out} angeschlossen. Bei Vollweggleichrichtung sollte $V_{\text{out}}$ die gleichgerichtete Hüllkurve des Eingangssignals zeigen, abzüglich der Dioden-Vorwärtsspannungen (ca.\ $2 \times 0.7\,\text{V} = 1.4\,\text{V}$ Verlust pro Halbwelle bei Silizium-Dioden).
+\textbf{Ausgang:} $R_2 = 50\,\Omega$ am Knoten \texttt{V\_out}. Gleichgerichtete Hüllkurve abzüglich $\approx 2 \times 0{,}7\,\text{V}$ Diodenverlust pro Halbwelle.
 
-\textbf{Zusätzliche Dioden D5 und D6:} Diese sind parallel zur Brücke angeordnet und könnten als \emph{Clamping-} oder \emph{Protection-Dioden} fungieren. Mögliche Interpretationen:
-\begin{itemize}
-\item \textbf{Überstromschutz:} D5 und D6 leiten, wenn die Ausgangsspannung bestimmte Schwellen überschreitet, und schützen so nachgeschaltete Schaltungen.
-\item \textbf{Clipper/Clamper:} Zusammen mit $V_6 = +5\,\text{V}$ und $V_7 = -5\,\text{V}$ könnten sie als spannungsbegrenzende Clipper wirken: D5 leitet, wenn $V_{\text{out}} > +5\,\text{V} - V_D$, und D6 leitet, wenn $V_{\text{out}} < -5\,\text{V} + V_D$. So wird die Ausgangsspannung auf den Bereich $[-5.7\,\text{V},\,+5.7\,\text{V}]$ begrenzt.
-\item \textbf{Back-to-Back-Dioden:} Falls D5 und D6 antiseriell geschaltet sind, fungieren sie als Signalbegrenzer, der beide Polaritäten begrenzt (ähnlich einem Varistor).
-\end{itemize}
+\textbf{D5 und D6:} Zusammen mit $V_6 = +5\,\text{V}$ und $V_7 = -5\,\text{V}$ wirken sie als Clipper: D5 leitet wenn $V_{\text{out}} > +5\,\text{V} - V_D$, D6 wenn $V_{\text{out}} < -5\,\text{V} + V_D$. Ausgang wird auf ca.\ $[-5{,}7\,\text{V},\,+5{,}7\,\text{V}]$ begrenzt.
 
-\textbf{Stromquellen $I_1$ und $I_2$:} Diese liefern jeweils $10\,\text{mA}$ Gleichstrom. Mögliche Rollen:
-\begin{itemize}
-\item \textbf{Bias-Strom:} Sie könnten die Dioden in einen bestimmten Arbeitspunkt vorspannen, um die Vorwärtsspannung und damit den Gleichrichterverlust zu kontrollieren.
-\item \textbf{Active Rectification:} Durch den konstanten Strom durch die Dioden wird der Spannungsabfall besser definiert und vorhersehbar. Dies ist eine Form von \emph{Bias-Current Rectification}.
-\item \textbf{DC-Restoration:} Die Stromquellen könnten als Teil einer DC-Restoration-Schaltung dienen, die den DC-Arbeitspunkt des Ausgangs festlegt.
-\end{itemize}
+\textbf{Stromquellen $I_1$ und $I_2$:} Liefern je 10\,mA DC — wahrscheinlich Bias-Strom für die Dioden, um den Spannungsabfall besser definiert zu machen.
 
-\textbf{Fourier-Analyse:} Die Simulation enthält \texttt{.four 1meg 10 -1 V(n004) V(V\_in) V(V\_out)}, was eine Fourier-Analyse bei $1\,\text{MHz}$ mit 10 Harmonischen und Index $-1$ (alle Harmonischen) für die Knoten V\_in und V\_out durchführt. Dies erlaubt es, den THD (Total Harmonic Distortion) des Gleichrichters zu bestimmen. Bei einem idealen Vollweggleichrichter enthält das Ausgangssignal nur gerade Harmonische (2f, 4f, \ldots) der Eingangsfrequenz.
+\textbf{Fourier-Analyse:} \texttt{.four 1meg 10 -1 V(n004) V(V\_in) V(V\_out)} — THD-Bestimmung des Gleichrichters. Ein idealer Vollweggleichrichter erzeugt nur gerade Harmonische (2f, 4f, \ldots).
 
-\textbf{Zusammenfassung:} Die Schaltung ist ein Vollweggleichrichter mit 50\,$\Omega$-Anpassung und zusätzlichen Schutz-/Bias-Dioden. Die Hochfrequenz-Anwendung ($1\,\text{MHz}$) erfordert schnelle Dioden (Schottky wären hier ideal wegen ihrer niedrigen Vorwärtsspannung und schnellen Erholungszeit).
+Vollweggleichrichter mit 50\,$\Omega$-Anpassung und Clipper-Schutz. Bei 1\,MHz wären Schottky-Dioden ideal (niedrige Vorwärtsspannung, schnelle Erholung).
 
-\subsection{Switched Capacitor — Einfacher Fall (Switched-C.asc)}
+\subsection{Switched Capacitor (Switched-C.asc)}
 
 \subsubsection{Topologie und Komponenten}
 
-Die Schaltung \texttt{Switched-C.asc} ist eine grundlegende \emph{Switched-Capacitor}-Schaltung mit folgenden Komponenten:
 \begin{itemize}
-\item \textbf{Eingangsspannung $V_1$:} \texttt{PWL(0 -1 1m -1 1.001m 1)} — ein Spannungssprung von $-1\,\text{V}$ auf $+1\,\text{V}$ bei $t = 1\,\text{ms}$ (sprungförmige Änderung).
-\item \textbf{Schalter S1:} Ein spannungsgesteuerter Schalter (\texttt{.model sw sw()}) — idealer Schalter mit 0/1-Schwellen.
-\item \textbf{Steuerspannung $V_2$:} \texttt{PWL(0 1 2m 1 5m 4)} — steuert den Schalter S1. Von $t = 0$ bis $t = 2\,\text{ms}$ ist die Steuerspannung $1\,\text{V}$ (Schalter geschlossen), danach steigt sie auf $4\,\text{V}$ bei $t = 5\,\text{ms}$ (Schalter bleibt geschlossen, da $> 1\,\text{V}$ Schwelle).
-\item \textbf{Kondensator $C_2$:} $1\,\mu\text{F}$, Anfangsbedingung \texttt{IC=0}.
-\item \textbf{Widerstand $R_1$:} $100\,\Omega$, in Serie zum Kondensator.
+\item $V_1$: \texttt{PWL(0 -1 1m -1 1.001m 1)} — Sprung von $-1\,\text{V}$ auf $+1\,\text{V}$ bei $t = 1\,\text{ms}$
+\item S1: Spannungsgesteuerter Schalter (\texttt{.model sw sw()}) — ideal, 0/1-Schwelle
+\item $V_2$: \texttt{PWL(0 1 2m 1 5m 4)} — Steuerspannung, $>1\,\text{V}$ = Schalter geschlossen
+\item $C_2 = 1\,\mu\text{F}$, IC=0; $R_1 = 100\,\Omega$
 \end{itemize}
 
 \subsubsection{Schaltungsanalyse}
 
-\textbf{Funktionsweise:} Dies ist das grundlegendste Switched-Capacitor-Prinzip:
+\textbf{Funktionsweise:}
 \begin{enumerate}
-\item \textbf{Schalter geschlossen (Phase 1):} Wenn S1 geschlossen ist ($V_{\text{SW}} > V_{\text{th}}$), wird der Eingang $V_1$ über $R_1$ mit $C_2$ verbunden. Der Kondensator lädt sich über die RC-Zeitkonstante $\tau = R_1 \cdot C_2 = 100\,\Omega \cdot 1\,\mu\text{F} = 100\,\mu\text{s}$ auf. Nach $5\tau = 500\,\mu\text{s}$ ist der Kondensator zu über 99\,\% aufgeladen.
-\item \textbf{Schalter offen (Phase 2):} Wenn S1 öffnet, bleibt die Ladung auf $C_2$ erhalten (idealer Kondensator). Die Ausgangsspannung \texttt{V\_out} hält den zuletzt gespeicherten Wert.
+\item Schalter geschlossen: $V_1$ über $R_1$ mit $C_2$ verbunden. $\tau = R_1 \cdot C_2 = 100\,\mu\text{s}$. Nach $5\tau = 500\,\mu\text{s}$ ist $C_2$ zu über 99\,\% geladen.
+\item Schalter offen: Ladung auf $C_2$ bleibt erhalten, $V_{\text{out}}$ hält den letzten Wert.
 \end{enumerate}
 
-\textbf{Signalfluss:}
-\begin{itemize}
-\item Von $t = 0$ bis $t = 1\,\text{ms}$: $V_1 = -1\,\text{V}$, Schalter ist geschlossen. $C_2$ lädt sich auf $-1\,\text{V}$.
-\item Bei $t = 1\,\text{ms}$: $V_1$ springt auf $+1\,\text{V}$. $C_2$ beginnt sich von $-1\,\text{V}$ auf $+1\,\text{V}$ umzuladen (Zeitkonstante $100\,\mu\text{s}$).
-\item Bis $t = 5\,\text{ms}$: Der Schalter bleibt geschlossen, die Steuerspannung steigt langsam von 1 auf 4\,V (ändert nichts am Schaltzustand, da bereits $> V_{\text{th}}$). Der Kondensator folgt dem Eingangssignal mit der RC-Verzögerung.
-\end{itemize}
+\textbf{Signalfluss:} $t < 1\,\text{ms}$: $V_1 = -1\,\text{V}$, Schalter zu, $C_2 \to -1\,\text{V}$. Bei $t = 1\,\text{ms}$: $V_1$ springt auf $+1\,\text{V}$, $C_2$ lädt um (RC-Verzögerung). Bis $t = 5\,\text{ms}$: Schalter bleibt zu, $V_2$ steigt langsam von 1 auf 4\,V (ändert nichts am Schaltzustand).
 
-\textbf{Zusammenhang zum LTC1043:} Diese Schaltung veranschaulicht das Prinzip, das im LTC1043 angewendet wird — nur dass der LTC1043 die Schalter automatisch mit seinem internen Oszillator steuert und zwei Kondensatoren abwechselnd schaltet (\emph{flying capacitor}). Hier ist es ein einzelner Schalter und ein einzelner Kondensator, was den Lade-/Haltemechanismus isoliert demonstriert.
+\textbf{Zusammenhang zum LTC1043:} Gleiche Grundidee — nur dass der LTC1043 automatisch mit seinem Oszillator schaltet und zwei Kondensatoren abwechselnd umschaltet (Flying Capacitor). Hier: einzelner Schalter, einzelner Kondensator, isoliertes Prinzip.
 
-\textbf{Beobachtung zur Steuerspannung:} Die Tatsache, dass $V_2$ von 1\,V auf 4\,V ansteigt (statt zwischen 0 und 1 zu schalten), legt nahe, dass dies ein Test ist, ob der Schalter bei verschiedenen Steuerspannungen (verschiedenen Gate-Spannungen bei einem MOSFET) unterschiedliche $R_{\text{on}}$-Werte aufweist. Bei einem realen MOS-Schalter ist $R_{\text{on}}$ eine Funktion der Gate-Source-Spannung — je höher $V_{\text{GS}}$, desto niedriger $R_{\text{on}}$. Die langsame Änderung von $V_2$ ermöglicht es, diesen Zusammenhang zu beobachten (falls der Schalter nicht ideal modelliert ist; \texttt{sw sw()} ist jedoch ideal).
+\textbf{Äquivalenter Widerstand:} Bei periodischem Schalten mit $f_{\text{clk}}$: $R_{\text{eq}} = 1 / (f_{\text{clk}} \cdot C_2)$. Mit $C_2 = 1\,\mu\text{F}$ und $f_{\text{clk}} = 10\,\text{kHz}$ ergibt sich $R_{\text{eq}} = 100\,\Omega$ — exakt $R_1$. So kann ein getakteter Kondensator einen physikalischen Widerstand ersetzen.
 
-\textbf{Switched-Capacitor-Äquivalenter Widerstand:} Wenn der Schalter periodisch mit einer Frequenz $f_{\text{clk}}$ betrieben würde, ergäbe sich ein äquivalenter Widerstand von $R_{\text{eq}} = 1 / (f_{\text{clk}} \cdot C_2)$. Bei $C_2 = 1\,\mu\text{F}$ und z.B.\ $f_{\text{clk}} = 10\,\text{kHz}$ wäre $R_{\text{eq}} = 100\,\Omega$ — exakt der Wert von $R_1$! Das zeigt, wie ein getakteter Kondensator einen physikalischen Widerstand ersetzen kann.
+\textbf{Hinweis zur Steuerspannung:} $V_2$ steigt von 1 auf 4\,V statt zu schalten — vermutlich ein Test, ob der Schalter bei verschiedenen Steuerspannungen unterschiedliches $R_{\text{on}}$ zeigt (bei realen MOS-Schaltern: höheres $V_{\text{GS}}$ → niedrigeres $R_{\text{on}}$). Das \texttt{sw sw()}-Modell ist aber ideal, also kein Effekt in dieser Simulation.
 
 \subsection{Bemerkungen zur Interpretation der Dreiecks-Symbole}
 
-Der LV-Leiter weist darauf hin, das \emph{Dreieck-Symbol} zu betrachten — ist es ein Verstärker oder ein Komparator?
+Der LV-Leiter weist darauf hin, das Dreieck-Symbol zu betrachten — Verstärker oder Komparator?
 
-\textbf{Op-Amp vs.\ Komparator — visuelle Unterscheidung:}
+In LTspice sehen beide identisch aus. Der Unterschied:
 \begin{itemize}
-\item In LTspice wird das Dreieck-Symbol für \emph{beide} verwendet — Op-Amp und Komparator sehen im Schaltplan identisch aus.
-\item \textbf{Op-Amp:} Hat immer eine \emph{negative Rückkopplung} (Ausgang ist mit dem invertierenden Eingang verbunden). Der Ausgang ist analog und linear — er stellt sich so ein, dass $V_+ = V_-$.
-\item \textbf{Komparator:} Hat \emph{keine} negative Rückkopplung (oder positive Rückkopplung). Der Ausgang ist digital — er schaltet auf $V^+$ oder $V^-$, je nachdem, welcher Eingang größer ist.
+\item Op-Amp: hat negative Rückkopplung (Ausgang mit invertierendem Eingang verbunden), Ausgang ist analog/linear
+\item Komparator: keine negative Rückkopplung, Ausgang ist digital (schaltet auf $V^+$ oder $V^-$)
 \end{itemize}
 
-\textbf{In den vorliegenden Schaltungen:}
-\begin{itemize}
-\item \texttt{1043-D2.asc} und \texttt{1043-M2.asc}: Der LTC1043 enthält interne Verstärker. Das Dreiecksymbol, falls sichtbar, wäre ein \emph{Verstärker}, da die Schaltungen analog arbeiten (Ausgang ist proportional zum Eingang).
-\item \texttt{Diode-Quartet.asc}: Enthält kein Dreieck-Symbol — nur Dioden und passive Bauteile.
-\item \texttt{Switched-C.asc}: Enthält ebenfalls kein Dreieck-Symbol — nur einen Schalter, Kondensator und Widerstand.
-\end{itemize}
+In den vorliegenden Schaltungen: \texttt{1043-D2.asc} und \texttt{1043-M2.asc} haben analoge Ausgänge → Verstärker. \texttt{Diode-Quartet.asc} und \texttt{Switched-C.asc} enthalten kein Dreieck-Symbol.
 
-\textbf{Faustregel:} Wenn ein Dreieck mit Gegenkopplung auftritt → Op-Amp. Ohne Gegenkopplung → wahrscheinlich Komparator. In der Praxis ist die Unterscheidung kritisch: ein Op-Amp ohne Gegenkopplung kann als Komparator arbeiten, aber langsam (nicht für hohe Frequenzen geeignet); ein Komparator mit Gegenkopplung oszilliert.
+Faustregel: Gegenkopplung → Op-Amp. Keine Gegenkopplung → wahrscheinlich Komparator. Ein Op-Amp ohne Gegenkopplung kann als Komparator arbeiten (aber langsam); ein Komparator mit Gegenkopplung oszilliert.
