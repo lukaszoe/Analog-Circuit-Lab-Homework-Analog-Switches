@@ -20,69 +20,69 @@ The LTC1043 converts an input frequency to a proportional output voltage. The in
 
 \textbf{Key advantage:} The conversion is inherently linear because each cycle transfers a fixed charge quantum. Linearity depends on the stability of $V_{\text{ref}}$, $C_{\text{ref}}$, and charge-transfer completeness — not on the linearity of any active device. An RC low-pass at the output smooths the ripple.
 
-\section{Weitere Schaltungsanalysen (Visual Inspection)}
+\section{Additional Circuit Analyses (Visual Inspection)}
 
-Die folgenden Schaltungen stammen aus den LTspice-Dateien \texttt{Diode-Quartet.asc} und \texttt{Switched-C.asc}. Sie enthalten keinen LTC1043, sondern demonstrieren andere Aspekte von analogen Schaltern und Dioden. Analyse durch \emph{visual inspection} der Schaltpläne, wie vom LV-Leiter empfohlen.
+The following circuits are from the LTspice files \texttt{Diode-Quartet.asc} and \texttt{Switched-C.asc}. They do not contain an LTC1043, but demonstrate other aspects of analog switches and diodes. Analysis by \emph{visual inspection} of the schematics, as recommended by the lab instructor.
 
 \subsection{Diode-Quartet (Diode-Quartet.asc)}
 
-\subsubsection{Topologie und Komponenten}
+\subsubsection{Topology and Components}
 
-Sechs Dioden (D1--D6), $\pm 5\,\text{V}$ Versorgung, Wechselspannung $V_3 = \text{SINE}(0,\,1,\,1\,\text{MHz})$ mit AC\,1, $R_1 = R_2 = 50\,\Omega$, Stromquellen $I_1 = I_2 = 10\,\text{mA}$, und $V_6 = +5\,\text{V}$, $V_7 = -5\,\text{V}$.
+Six diodes (D1--D6), $\pm 5\,\text{V}$ supply, AC voltage $V_3 = \text{SINE}(0,\,1,\,1\,\text{MHz})$ with AC\,1, $R_1 = R_2 = 50\,\Omega$, current sources $I_1 = I_2 = 10\,\text{mA}$, and $V_6 = +5\,\text{V}$, $V_7 = -5\,\text{V}$.
 
-\subsubsection{Schaltungsanalyse}
+\subsubsection{Circuit Analysis}
 
-\textbf{Diodenbrücke (D1--D4):} Graetz-Vollweggleichrichter. Positive Halbwelle: D1/D2 leiten, D3/D4 sperren. Negative Halbwelle: D3/D4 leiten, D1/D2 sperren. Ergebnis: gleichgerichteter Strom durch die Last, unabhängig von der Eingangspolarität.
+\textbf{Diode bridge (D1--D4):} Full-wave bridge rectifier (Graetz circuit). Positive half-cycle: D1/D2 conduct, D3/D4 block. Negative half-cycle: D3/D4 conduct, D1/D2 block. Result: rectified current through the load, independent of input polarity.
 
-\textbf{Eingang:} $V_3$ liefert 1\,V bei 1\,MHz. $R_1 = 50\,\Omega$ — typische 50\,$\Omega$-Quellenimpedanz, begrenzt den Eingangsstrom.
+\textbf{Input:} $V_3$ provides 1\,V at 1\,MHz. $R_1 = 50\,\Omega$ --- typical 50\,$\Omega$ source impedance, limits input current.
 
-\textbf{Ausgang:} $R_2 = 50\,\Omega$ am Knoten \texttt{V\_out}. Gleichgerichtete Hüllkurve abzüglich $\approx 2 \times 0{,}7\,\text{V}$ Diodenverlust pro Halbwelle.
+\textbf{Output:} $R_2 = 50\,\Omega$ at node \texttt{V\_out}. Rectified envelope minus $\approx 2 \times 0.7\,\text{V}$ diode drop per half-cycle.
 
-\textbf{D5 und D6:} Zusammen mit $V_6 = +5\,\text{V}$ und $V_7 = -5\,\text{V}$ wirken sie als Clipper: D5 leitet wenn $V_{\text{out}} > +5\,\text{V} - V_D$, D6 wenn $V_{\text{out}} < -5\,\text{V} + V_D$. Ausgang wird auf ca.\ $[-5{,}7\,\text{V},\,+5{,}7\,\text{V}]$ begrenzt.
+\textbf{D5 and D6:} Together with $V_6 = +5\,\text{V}$ and $V_7 = -5\,\text{V}$ they act as clippers: D5 conducts when $V_{\text{out}} > +5\,\text{V} - V_D$, D6 when $V_{\text{out}} < -5\,\text{V} + V_D$. Output is clamped to approximately $[-5.7\,\text{V},\,+5.7\,\text{V}]$.
 
-\textbf{Stromquellen $I_1$ und $I_2$:} Liefern je 10\,mA DC — wahrscheinlich Bias-Strom für die Dioden, um den Spannungsabfall besser definiert zu machen.
+\textbf{Current sources $I_1$ and $I_2$:} Each provides 10\,mA DC --- likely bias current for the diodes, making the voltage drop better defined.
 
-\textbf{Fourier-Analyse:} \texttt{.four 1meg 10 -1 V(n004) V(V\_in) V(V\_out)} — THD-Bestimmung des Gleichrichters. Ein idealer Vollweggleichrichter erzeugt nur gerade Harmonische (2f, 4f, \ldots).
+\textbf{Fourier analysis:} \texttt{.four 1meg 10 -1 V(n004) V(V\_in) V(V\_out)} --- THD determination of the rectifier. An ideal full-wave rectifier produces only even harmonics (2f, 4f, \ldots).
 
-Vollweggleichrichter mit 50\,$\Omega$-Anpassung und Clipper-Schutz. Bei 1\,MHz wären Schottky-Dioden ideal (niedrige Vorwärtsspannung, schnelle Erholung).
+Full-wave rectifier with 50\,$\Omega$ matching and clipper protection. At 1\,MHz, Schottky diodes would be ideal (low forward voltage, fast recovery).
 
 \subsection{Switched Capacitor (Switched-C.asc)}
 
-\subsubsection{Topologie und Komponenten}
+\subsubsection{Topology and Components}
 
 \begin{itemize}
-\item $V_1$: \texttt{PWL(0 -1 1m -1 1.001m 1)} — Sprung von $-1\,\text{V}$ auf $+1\,\text{V}$ bei $t = 1\,\text{ms}$
-\item S1: Spannungsgesteuerter Schalter (\texttt{.model sw sw()}) — ideal, 0/1-Schwelle
-\item $V_2$: \texttt{PWL(0 1 2m 1 5m 4)} — Steuerspannung, $>1\,\text{V}$ = Schalter geschlossen
+\item $V_1$: \texttt{PWL(0 -1 1m -1 1.001m 1)} --- step from $-1\,\text{V}$ to $+1\,\text{V}$ at $t = 1\,\text{ms}$
+\item S1: Voltage-controlled switch (\texttt{.model sw sw()}) --- ideal, 0/1 threshold
+\item $V_2$: \texttt{PWL(0 1 2m 1 5m 4)} --- control voltage, $>1\,\text{V}$ = switch closed
 \item $C_2 = 1\,\mu\text{F}$, IC=0; $R_1 = 100\,\Omega$
 \end{itemize}
 
-\subsubsection{Schaltungsanalyse}
+\subsubsection{Circuit Analysis}
 
-\textbf{Funktionsweise:}
+\textbf{Operation:}
 \begin{enumerate}
-\item Schalter geschlossen: $V_1$ über $R_1$ mit $C_2$ verbunden. $\tau = R_1 \cdot C_2 = 100\,\mu\text{s}$. Nach $5\tau = 500\,\mu\text{s}$ ist $C_2$ zu über 99\,\% geladen.
-\item Schalter offen: Ladung auf $C_2$ bleibt erhalten, $V_{\text{out}}$ hält den letzten Wert.
+\item Switch closed: $V_1$ connected to $C_2$ via $R_1$. $\tau = R_1 \cdot C_2 = 100\,\mu\text{s}$. After $5\tau = 500\,\mu\text{s}$, $C_2$ is charged to over 99\,\%.
+\item Switch open: charge on $C_2$ is preserved, $V_{\text{out}}$ holds the last value.
 \end{enumerate}
 
-\textbf{Signalfluss:} $t < 1\,\text{ms}$: $V_1 = -1\,\text{V}$, Schalter zu, $C_2 \to -1\,\text{V}$. Bei $t = 1\,\text{ms}$: $V_1$ springt auf $+1\,\text{V}$, $C_2$ lädt um (RC-Verzögerung). Bis $t = 5\,\text{ms}$: Schalter bleibt zu, $V_2$ steigt langsam von 1 auf 4\,V (ändert nichts am Schaltzustand).
+\textbf{Signal flow:} $t < 1\,\text{ms}$: $V_1 = -1\,\text{V}$, switch closed, $C_2 \to -1\,\text{V}$. At $t = 1\,\text{ms}$: $V_1$ steps to $+1\,\text{V}$, $C_2$ recharges (RC delay). Until $t = 5\,\text{ms}$: switch remains closed, $V_2$ slowly rises from 1 to 4\,V (does not affect switch state).
 
-\textbf{Zusammenhang zum LTC1043:} Gleiche Grundidee — nur dass der LTC1043 automatisch mit seinem Oszillator schaltet und zwei Kondensatoren abwechselnd umschaltet (Flying Capacitor). Hier: einzelner Schalter, einzelner Kondensator, isoliertes Prinzip.
+\textbf{Relation to the LTC1043:} Same basic idea --- except the LTC1043 switches automatically with its oscillator and alternates between two capacitors (flying capacitor). Here: single switch, single capacitor, isolated principle.
 
-\textbf{Äquivalenter Widerstand:} Bei periodischem Schalten mit $f_{\text{clk}}$: $R_{\text{eq}} = 1 / (f_{\text{clk}} \cdot C_2)$. Mit $C_2 = 1\,\mu\text{F}$ und $f_{\text{clk}} = 10\,\text{kHz}$ ergibt sich $R_{\text{eq}} = 100\,\Omega$ — exakt $R_1$. So kann ein getakteter Kondensator einen physikalischen Widerstand ersetzen.
+\textbf{Equivalent resistance:} With periodic switching at $f_{\text{clk}}$: $R_{\text{eq}} = 1 / (f_{\text{clk}} \cdot C_2)$. With $C_2 = 1\,\mu\text{F}$ and $f_{\text{clk}} = 10\,\text{kHz}$, $R_{\text{eq}} = 100\,\Omega$ --- exactly $R_1$. This is how a switched capacitor can replace a physical resistor.
 
-\textbf{Hinweis zur Steuerspannung:} $V_2$ steigt von 1 auf 4\,V statt zu schalten — vermutlich ein Test, ob der Schalter bei verschiedenen Steuerspannungen unterschiedliches $R_{\text{on}}$ zeigt (bei realen MOS-Schaltern: höheres $V_{\text{GS}}$ → niedrigeres $R_{\text{on}}$). Das \texttt{sw sw()}-Modell ist aber ideal, also kein Effekt in dieser Simulation.
+\textbf{Note on control voltage:} $V_2$ ramps from 1 to 4\,V instead of switching --- presumably a test of whether the switch shows different $R_{\text{on}}$ at different control voltages (for real MOS switches: higher $V_{\text{GS}}$ $\to$ lower $R_{\text{on}}$). The \texttt{sw sw()} model is ideal, however, so there is no effect in this simulation.
 
-\subsection{Bemerkungen zur Interpretation der Dreiecks-Symbole}
+\subsection{Notes on Interpreting the Triangle Symbols}
 
-Der LV-Leiter weist darauf hin, das Dreieck-Symbol zu betrachten — Verstärker oder Komparator?
+The lab instructor suggests looking at the triangle symbol --- amplifier or comparator?
 
-In LTspice sehen beide identisch aus. Der Unterschied:
+In LTspice, both look identical. The difference:
 \begin{itemize}
-\item Op-Amp: hat negative Rückkopplung (Ausgang mit invertierendem Eingang verbunden), Ausgang ist analog/linear
-\item Komparator: keine negative Rückkopplung, Ausgang ist digital (schaltet auf $V^+$ oder $V^-$)
+\item Op-amp: has negative feedback (output connected to inverting input), output is analog/linear
+\item Comparator: no negative feedback, output is digital (switches to $V^+$ or $V^-$)
 \end{itemize}
 
-In den vorliegenden Schaltungen: \texttt{1043-D2.asc} und \texttt{1043-M2.asc} haben analoge Ausgänge → Verstärker. \texttt{Diode-Quartet.asc} und \texttt{Switched-C.asc} enthalten kein Dreieck-Symbol.
+In the circuits under consideration: \texttt{1043-D2.asc} and \texttt{1043-M2.asc} have analog outputs $\to$ amplifiers. \texttt{Diode-Quartet.asc} and \texttt{Switched-C.asc} contain no triangle symbol.
 
-Faustregel: Gegenkopplung → Op-Amp. Keine Gegenkopplung → wahrscheinlich Komparator. Ein Op-Amp ohne Gegenkopplung kann als Komparator arbeiten (aber langsam); ein Komparator mit Gegenkopplung oszilliert.
+Rule of thumb: negative feedback $\to$ op-amp. No negative feedback $\to$ likely a comparator. An op-amp without negative feedback can work as a comparator (but slowly); a comparator with negative feedback oscillates.

@@ -13,16 +13,16 @@ The multiply-by-2 circuit uses the LTC1043's switched-capacitor network to doubl
 
 The op-amp at the output buffers the voltage and provides low-impedance output.
 
-\textbf{Schaltungsanalyse: Multiply-by-2 (1043-M2.asc).}
-	Symmetrische Versorgung mit $\pm 5\,\text{V}$ an Pins 15/12, Eingang $V_3 = 1\,\text{V}$.
+\textbf{Circuit Analysis: Multiply-by-2 (1043-M2.asc).}
+	Symmetric supply with $\pm 5\,\text{V}$ at pins 15/12, input $V_3 = 1\,\text{V}$.
 
-	Der Flying Capacitor $C_1 = 10\,\text{nF}$ wird pro Taktphase umgeschaltet:
+	The flying capacitor $C_1 = 10\,\text{nF}$ is switched each clock phase:
 	\begin{itemize}
-		\item Sample-Phase: $C_1$ lädt sich auf $V_{\text{in}}$
-		\item Transfer-Phase: $C_1$ in Reihe mit $C_3$ (0.1\,µF) --- Spannungen addieren sich, $V_{\text{out}} \to 2 \cdot V_{\text{in}}$
+		\item Sample phase: $C_1$ charges to $V_{\text{in}}$
+		\item Transfer phase: $C_1$ in series with $C_3$ (0.1\,µF) --- voltages add up, $V_{\text{out}} \to 2 \cdot V_{\text{in}}$
 	\end{itemize}
 
-	$C_2$ und $C_3$ (je 0.1\,µF) sind 10$\times$ größer als $C_1$ und wirken als Haltekondensatoren --- wenig Ripple, glatter Ausgang. Transient-Simulation über 30\,ms mit Startup: $V_{\text{out}}$ konvergiert auf 2\,V.
+	$C_2$ and $C_3$ (each 0.1\,µF) are 10$\times$ larger than $C_1$ and act as holding capacitors --- low ripple, smoother output. Transient simulation over 30\,ms with startup: $V_{\text{out}}$ converges to 2\,V.
 
 \subsubsection{Divide-by-2 Circuit}
 
@@ -31,17 +31,17 @@ The divide-by-2 circuit halves the input voltage. During the sample phase, $C_2$
 	V_{\text{out}} = \frac{V_{\text{in}}}{2}
 \end{equation}
 
-\textbf{Schaltungsanalyse: Divide-by-2 (1043-D2.asc).}
-Gleiche Versorgung wie M2. Eingang $V_3 = 1\,\text{V}$, Flying Capacitor $C_1 = 10\,\text{nF}$.
+\textbf{Circuit Analysis: Divide-by-2 (1043-D2.asc).}
+	Same supply as M2. Input $V_3 = 1\,\text{V}$, flying capacitor $C_1 = 10\,\text{nF}$.
 
 	\begin{itemize}
-		\item Sample-Phase: $C_1$ lädt sich auf $V_{\text{in}}$
-		\item Transfer-Phase: $C_1$ parallel zu $C_2$ (0.1\,µF) — Ladung teilt sich auf, $V_{\text{out}} \to V_{\text{in}}/2$
+		\item Sample phase: $C_1$ charges to $V_{\text{in}}$
+		\item Transfer phase: $C_1$ in parallel with $C_2$ (0.1\,µF) --- charge is shared, $V_{\text{out}} \to V_{\text{in}}/2$
 	\end{itemize}
 
-	$C_2$ (0.1\,µF) ist der Haltekondensator, $C_3$ (0.1\,µF) zusätzlicher Filter. Transient über 3\,ms mit Startup: $V_{\text{out}} \to 0{,}5\,\text{V}$.
+	$C_2$ (0.1\,µF) is the holding capacitor, $C_3$ (0.1\,µF) provides additional filtering. Transient over 3\,ms with startup: $V_{\text{out}} \to 0.5\,\text{V}$.
 
-	Unterschied zum M2: Beim Multiplier wird $C_1$ \emph{in Reihe} geschaltet (Spannungen addieren), beim Divider \emph{parallel} (Ladung teilt sich).
+	Difference from M2: in the multiplier, $C_1$ is connected \emph{in series} (voltages add up); in the divider, \emph{in parallel} (charge is shared).
 
 \subsection{Influence of Operating Frequency and ON-Resistance}
 
@@ -55,14 +55,14 @@ The switching frequency $f_{\text{clk}}$ determines how often charge is transfer
 
 In practice, $f_{\text{clk}}$ should be at least $50\times$ the signal bandwidth.
 
-\textbf{Analyse: Einfluss der Schaltfrequenz und $R_{\text{on}}$.}
-Interner Oszillator: $f_{\text{clk}} \approx 150\,\text{kHz}$ (bei $C_{\text{osc}} = 10\,\text{nF}$). $R_{\text{on}}$ typisch $\approx 300\,\Omega$.
+\textbf{Analysis: Impact of switching frequency and $R_{\text{on}}$.}
+	Internal oscillator: $f_{\text{clk}} \approx 150\,\text{kHz}$ (with $C_{\text{osc}} = 10\,\text{nF}$). $R_{\text{on}}$ typically $\approx 300\,\Omega$.
 
-	Zeitkonstante: $\tau = R_{\text{on}} \cdot C_1 = 300\,\Omega \cdot 10\,\text{nF} = 3\,\mu\text{s}$. Halbperiode bei 150\,kHz: $T_{\text{clk}}/2 \approx 3{,}3\,\mu\text{s}$. Verhältnis $T/(2\tau) \approx 1{,}1$ — der Kondensator lädt nur auf ca.\ 67\,\% pro Halbphase. In der Praxis kompensiert das Tastverhältnis des internen Oszillators das, und die effektive Zeitkonstante ist kleiner (niedrigere Impedanz beim Ausgangstreiber).
+	Time constant: $\tau = R_{\text{on}} \cdot C_1 = 300\,\Omega \cdot 10\,\text{nF} = 3\,\mu\text{s}$. Half-period at 150\,kHz: $T_{\text{clk}}/2 \approx 3.3\,\mu\text{s}$. Ratio $T/(2\tau) \approx 1.1$ --- the capacitor charges to only about 67\,\% per half-phase. In practice, the duty cycle of the internal oscillator compensates for this, and the effective time constant is smaller (lower impedance from the output driver).
 
-	Ripple: $\Delta V \approx \frac{C_1}{C_{\text{hold}}} \cdot V_{\text{in}} = \frac{10\,\text{nF}}{100\,\text{nF}} \cdot 1\,\text{V} \approx 100\,\text{mV}$ pro Zyklus, wird über viele Zyklen stark reduziert.
+	Ripple: $\Delta V \approx \frac{C_1}{C_{\text{hold}}} \cdot V_{\text{in}} = \frac{10\,\text{nF}}{100\,\text{nF}} \cdot 1\,\text{V} \approx 100\,\text{mV}$ per cycle, strongly reduced over many cycles.
 
-	Höhere Frequenz: weniger Ripple, aber mehr Stromverbrauch ($\propto f_{\text{clk}}$). Höheres $R_{\text{on}}$: größere Zeitkonstante, unvollständigere Ladung, Fehler steigt exponentiell.
+	Higher frequency: less ripple, but higher current consumption ($\propto f_{\text{clk}}$). Higher $R_{\text{on}}$: larger time constant, more incomplete charging, error increases exponentially.
 
 \subsubsection{ON-Resistance ($R_{\text{on}}$)}
 
@@ -92,13 +92,13 @@ Only when $C_2 = C_3$ does this yield $V_{\text{in}} / 2$. Mismatch directly cau
 
 In both cases, the gain error is proportional to $\Delta C / C$. Precision applications need matched capacitors (e.g., \SI{0.01}{\percent} for \SI{12}{bit} accuracy) or trimming.
 
-\textbf{Analyse: Einfluss von Kondensatorungleichheit ($C_2 \neq C_3$).}
-In den Simulationen sind $C_2 = C_3 = 0{,}1\,\mu\text{F}$ (identisch). Theoretische Auswirkung bei 10\,\% Abweichung ($C_3 = 0{,}09\,\mu\text{F}$):
+\textbf{Analysis: Impact of capacitor mismatch ($C_2 \neq C_3$).}
+	In the simulations, $C_2 = C_3 = 0.1\,\mu\text{F}$ (identical). Theoretical impact at 10\,\% deviation ($C_3 = 0.09\,\mu\text{F}$):
 
-	M2: $V_{\text{out}} = V_{\text{in}} \cdot (1 + 1{,}\overline{1}) = 2{,}\overline{1} \cdot V_{\text{in}}$ → Fehler $+5{,}6\,\%$.
+	M2: $V_{\text{out}} = V_{\text{in}} \cdot (1 + 1.\overline{1}) = 2.\overline{1} \cdot V_{\text{in}}$ $\to$ error $+5.6\,\%$.
 
-	D2: $V_{\text{out}} = V_{\text{in}} \cdot \frac{0{,}1}{0{,}19} \approx 0{,}526 \cdot V_{\text{in}}$ → Fehler $+5{,}3\,\%$.
+	D2: $V_{\text{out}} = V_{\text{in}} \cdot \frac{0.1}{0.19} \approx 0.526 \cdot V_{\text{in}}$ $\to$ error $+5.3\,\%$.
 
-	Der Flying Capacitor $C_1 = 10\,\text{nF}$ bestimmt die pro Zyklus übertragene Ladung, aber $C_2$/$C_3$ bestimmen die stationäre Ausgangsspannung. Mismatch $C_1$ vs.\ $C_2/C_3$ → langsamere Einschwingung. Mismatch $C_2$ vs.\ $C_3$ → direkter Genauigkeitsfehler.
+	The flying capacitor $C_1 = 10\,\text{nF}$ determines the charge transferred per cycle, but $C_2$/$C_3$ determine the steady-state output voltage. Mismatch $C_1$ vs.\ $C_2/C_3$ $\to$ slower settling. Mismatch $C_2$ vs.\ $C_3$ $\to$ direct accuracy error.
 
-	Auf ICs: $< 0{,}1\,\%$ Matching möglich (10-Bit reicht). Diskret: 5--20\,\% Toleranz bei Keramikkondensatoren — für Präzision braucht's Trimmen oder Selektion.
+	On ICs: $< 0.1\,\%$ matching is achievable (10-bit suffices). Discrete: 5--20\,\% tolerance for ceramic capacitors --- precision requires trimming or selection.
