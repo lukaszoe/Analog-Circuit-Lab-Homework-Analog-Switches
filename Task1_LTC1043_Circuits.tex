@@ -6,42 +6,37 @@ The LTC1043 is a monolithic switched-capacitor building block with dual switched
 
 \subsubsection{Multiply-by-2 Circuit}
 
-The multiply-by-2 circuit uses the LTC1043's switched-capacitor network to double the input voltage. During the sample phase, capacitor $C_2$ charges to $V_{\text{in}}$. During the transfer phase, $C_2$ is placed in series with $C_3$, which already holds the previous output voltage. With equal capacitor values, the output doubles:
+The multiply-by-2 circuit uses the LTC1043's two internal switched-capacitor networks to double the input voltage. On every clock half-cycle, the on-chip flying capacitors are reconfigured by the internal switches: during the sample phase, the on-chip flying cap is charged to $V_{\text{in}}$; during the transfer phase, it is switched in series with the external hold cap that already carries the previous output voltage, so the voltages add. With matched internal flying caps, the output converges to:
 \begin{equation}
 	V_{\text{out}} = 2 \cdot V_{\text{in}}
 \end{equation}
 
-The op-amp at the output buffers the voltage and provides low-impedance output.
+The output is then buffered by an internal op-amp to provide a low-impedance output. (The exact implementation --- whether two on-chip flying caps are summed, or one is stacked onto the previous output --- is hidden inside the LTC1043 and is selected by how the external 0.1\,µF caps are wired to the S1A/S2A/S3A/S4A and Ca+/Ca- pins.)
 
 \textbf{Circuit Analysis: Multiply-by-2 (1043-M2.asc).}
-	Symmetric supply with $\pm 5\,\text{V}$ at pins 15/12, input $V_3 = 1\,\text{V}$.
+	Symmetric supply with $\pm 5\,\text{V}$ at the supply pins of the LTC1043, input $V_3 = 1\,\text{V}$.
 
-	The flying capacitor $C_1 = 10\,\text{nF}$ is switched each clock phase:
-	\begin{itemize}
-		\item Sample phase: $C_1$ charges to $V_{\text{in}}$
-		\item Transfer phase: $C_1$ in series with $C_3$ (0.1\,µF) --- voltages add up, $V_{\text{out}} \to 2 \cdot V_{\text{in}}$
-	\end{itemize}
+	\textbf{Important clarification on the external capacitors.} $C_1 = 10\,\text{nF}$ is \emph{not} the flying capacitor --- it is the \textbf{oscillator timing capacitor} at the \texttt{Cosc} pin, which sets the internal clock frequency $f_{\text{clk}} \approx 150\,\text{kHz}$. The actual flying capacitors are \emph{integrated on-chip} in the LTC1043 and not visible in the schematic. The external $C_2$ and $C_3$ (each 0.1\,µF) are the \textbf{hold / output filter capacitors} at the output node and at the auxiliary \texttt{Ca+}/\texttt{Ca-} pins.
 
-	$C_2$ and $C_3$ (each 0.1\,µF) are 10$\times$ larger than $C_1$ and act as holding capacitors --- low ripple, smoother output. Transient simulation over 30\,ms with startup: $V_{\text{out}}$ converges to 2\,V.
+	\textbf{Sample/transfer (internally).} The LTC1043's two internal SC networks toggle on every clock half-cycle between two configurations --- which one is active is set by external wiring of $C_2$ and $C_3$ to the switch pins (S1A, S2A, S3A, S4A, Ca+, Ca-). In the M2 file, the two external 0.1\,µF caps are wired so that one is summed in series with the previous output, giving a per-cycle voltage addition $V_{\text{out}} \to 2 \cdot V_{\text{in}}$. In the D2 file, they are wired so that charge is shared in parallel, giving $V_{\text{out}} \to V_{\text{in}}/2$.
+
+	Transient simulation over 30\,ms with startup: $V_{\text{out}}$ converges to 2\,V.
 
 \subsubsection{Divide-by-2 Circuit}
 
-The divide-by-2 circuit halves the input voltage. During the sample phase, $C_2$ charges to $V_{\text{in}}$. During the transfer phase, $C_2$ connects in parallel with $C_3$, redistributing the charge. With $C_2 = C_3$:
+The divide-by-2 circuit halves the input voltage using the same LTC1043 SC network as the multiplier --- only the external wiring of the 0.1\,µF caps differs. On every clock half-cycle the on-chip flying cap is recharged to $V_{\text{in}}$ and then connected in parallel with the external hold cap, redistributing the charge. With equal values, the output settles to:
 \begin{equation}
 	V_{\text{out}} = \frac{V_{\text{in}}}{2}
 \end{equation}
 
 \textbf{Circuit Analysis: Divide-by-2 (1043-D2.asc).}
-	Same supply as M2. Input $V_3 = 1\,\text{V}$, flying capacitor $C_1 = 10\,\text{nF}$.
+	Same supply as M2. Input $V_3 = 1\,\text{V}$, oscillator cap $C_1 = 10\,\text{nF}$ (same role as in M2 --- sets $f_{\text{clk}}$, not a flying cap).
 
-	\begin{itemize}
-		\item Sample phase: $C_1$ charges to $V_{\text{in}}$
-		\item Transfer phase: $C_1$ in parallel with $C_2$ (0.1\,µF) --- charge is shared, $V_{\text{out}} \to V_{\text{in}}/2$
-	\end{itemize}
+	\textbf{Sample/transfer (internally).} As in M2, the actual flying capacitors are integrated on-chip. The external wiring of $C_2$ (0.1\,µF, at the output/\texttt{Ca+} side) and $C_3$ (0.1\,µF, hold cap) connects the internal SC network so that during the transfer phase the on-chip flying cap shares its charge with the external $C_2$ in parallel --- effectively halving the input voltage at the output. This is the same M2 sample/transfer mechanism, only the pin-to-cap wiring of the external caps is swapped.
 
 	$C_2$ (0.1\,µF) is the holding capacitor, $C_3$ (0.1\,µF) provides additional filtering. Transient over 3\,ms with startup: $V_{\text{out}} \to 0.5\,\text{V}$.
 
-	Difference from M2: in the multiplier, $C_1$ is connected \emph{in series} (voltages add up); in the divider, \emph{in parallel} (charge is shared).
+	Difference from M2: the external caps are wired to the LTC1043's switch pins in the parallel-charge-sharing configuration, instead of the series-addition configuration. The on-chip flying cap and clock behavior are identical.
 
 \subsection{Influence of Operating Frequency and ON-Resistance}
 
@@ -56,13 +51,13 @@ The switching frequency $f_{\text{clk}}$ determines how often charge is transfer
 In practice, $f_{\text{clk}}$ should be at least $50\times$ the signal bandwidth.
 
 \textbf{Analysis: Impact of switching frequency and $R_{\text{on}}$.}
-	Internal oscillator: $f_{\text{clk}} \approx 150\,\text{kHz}$ (with $C_{\text{osc}} = 10\,\text{nF}$). $R_{\text{on}}$ typically $\approx 300\,\Omega$.
+	Internal oscillator: $f_{\text{clk}} \approx 150\,\text{kHz}$ (with $C_{\text{osc}} = C_1 = 10\,\text{nF}$ at the \texttt{Cosc} pin). $R_{\text{on}}$ of the internal MOS switches is typically $\approx 300\,\Omega$.
 
-	Time constant: $\tau = R_{\text{on}} \cdot C_1 = 300\,\Omega \cdot 10\,\text{nF} = 3\,\mu\text{s}$. Half-period at 150\,kHz: $T_{\text{clk}}/2 \approx 3.3\,\mu\text{s}$. Ratio $T/(2\tau) \approx 1.1$ --- the capacitor charges to only about 67\,\% per half-phase. In practice, the duty cycle of the internal oscillator compensates for this, and the effective time constant is smaller (lower impedance from the output driver).
+	Time constant for charging the (internal) flying cap through the on-resistance: $\tau = R_{\text{on}} \cdot C_{\text{fly}}$. The internal flying cap is a few pF (on-chip), so $\tau$ is well below the 3.3\,µs half-period --- charge transfer is essentially complete. The 10\,nF external $C_1$ does \emph{not} sit in the signal path of the SC network, so its time constant with $R_{\text{on}}$ is irrelevant for accuracy.
 
-	Ripple: $\Delta V \approx \frac{C_1}{C_{\text{hold}}} \cdot V_{\text{in}} = \frac{10\,\text{nF}}{100\,\text{nF}} \cdot 1\,\text{V} \approx 100\,\text{mV}$ per cycle, strongly reduced over many cycles.
+	Ripple: the output ripple is set by the ratio of the (internal) flying cap to the external hold cap, i.e.\ $\Delta V \approx \frac{C_{\text{fly}}}{C_2}\cdot V_{\text{in}}$. With on-chip $C_{\text{fly}}$ in the pF range and external $C_2 = 0.1$\,µF, the ripple is well below 1\,mV per cycle, strongly filtered by the large hold caps. The earlier estimate of 100\,mV ripple was based on a misinterpretation of $C_1$ as the flying cap.
 
-	Higher frequency: less ripple, but higher current consumption ($\propto f_{\text{clk}}$). Higher $R_{\text{on}}$: larger time constant, more incomplete charging, error increases exponentially.
+	Higher $f_{\text{clk}}$: less ripple, but higher current consumption ($\propto f_{\text{clk}}$). Higher $R_{\text{on}}$: only matters if it becomes comparable to the reciprocal of $C_{\text{fly}} \cdot f_{\text{clk}}$.
 
 \subsubsection{ON-Resistance ($R_{\text{on}}$)}
 
@@ -74,31 +69,27 @@ The MOS switches inside the LTC1043 have finite ON-resistance $R_{\text{on}}$, w
 
 \subsection{Impact of Mismatched Capacitors ($C_2 \neq C_3$)}
 
-When $C_2$ and $C_3$ aren't identical, the charge redistribution is no longer symmetrical.
+For the LTC1043's internal SC network, the actual gain ratios are set by the on-chip flying-cap matching, not by the external $C_2$ and $C_3$. The external caps only act as hold / filter caps; their mismatch mainly affects residual ripple and settling time, not the DC ratio. The formulas below describe what \emph{would} happen if the external caps were the active divider/multiplier network (a useful intuition-building exercise) --- the real LTC1043, however, is far less sensitive to external-cap tolerance than these formulas suggest.
 
 \subsubsection{Multiply-by-2 Circuit}
-With $C_2 \neq C_3$:
+If the multiplier ratio were determined by external caps:
 \begin{equation}
 	V_{\text{out}} = V_{\text{in}} \cdot \left(1 + \frac{C_2}{C_3}\right)
 \end{equation}
-If $C_2 = C_3$, this reduces to $2 \cdot V_{\text{in}}$. A mismatch causes a gain error.
+A mismatch would cause a gain error.
 
 \subsubsection{Divide-by-2 Circuit}
-With $C_2 \neq C_3$:
+If the divider ratio were determined by external caps:
 \begin{equation}
 	V_{\text{out}} = V_{\text{in}} \cdot \frac{C_2}{C_2 + C_3}
 \end{equation}
-Only when $C_2 = C_3$ does this yield $V_{\text{in}} / 2$. Mismatch directly causes a division ratio error.
+A mismatch would cause a division ratio error.
 
-In both cases, the gain error is proportional to $\Delta C / C$. Precision applications need matched capacitors (e.g., \SI{0.01}{\percent} for \SI{12}{bit} accuracy) or trimming.
+The LTC1043's 12\,bit ($\approx 0.01\,\%$) accuracy in practice comes from internal on-chip matching, not from external-cap selection.
 
 \textbf{Analysis: Impact of capacitor mismatch ($C_2 \neq C_3$).}
-	In the simulations, $C_2 = C_3 = 0.1\,\mu\text{F}$ (identical). Theoretical impact at 10\,\% deviation ($C_3 = 0.09\,\mu\text{F}$):
+	In the simulations, $C_2 = C_3 = 0.1\,\mu\text{F}$ (identical). Both caps are external hold/filter caps at the output side of the SC network --- mismatch between them primarily affects output filtering, not the gain. The actual gain accuracy of the LTC1043 divider/multiplier is dominated by the \emph{internal} on-chip flying-cap matching (which is excellent, typically $< 0.1\,\%$).
 
-	M2: $V_{\text{out}} = V_{\text{in}} \cdot (1 + 1.\overline{1}) = 2.\overline{1} \cdot V_{\text{in}}$ $\to$ error $+5.6\,\%$.
+	\textbf{Theoretical impact of 10\,\% mismatch between external $C_2$ and $C_3$:} the steady-state DC gain is essentially unchanged (the LTC1043's internal network sets the ratio), but residual ripple and settling time degrade. The earlier error figures of $+5.6\,\%$ (M2) and $+5.3\,\%$ (D2) were derived under the wrong assumption that the external 0.1\,µF caps are the flying/divider caps; in reality the LTC1043 determines the ratio internally, so a 10\,\% external-cap mismatch does not produce a 5\,\% gain error.
 
-	D2: $V_{\text{out}} = V_{\text{in}} \cdot \frac{0.1}{0.19} \approx 0.526 \cdot V_{\text{in}}$ $\to$ error $+5.3\,\%$.
-
-	The flying capacitor $C_1 = 10\,\text{nF}$ determines the charge transferred per cycle, but $C_2$/$C_3$ determine the steady-state output voltage. Mismatch $C_1$ vs.\ $C_2/C_3$ $\to$ slower settling. Mismatch $C_2$ vs.\ $C_3$ $\to$ direct accuracy error.
-
-	On ICs: $< 0.1\,\%$ matching is achievable (10-bit suffices). Discrete: 5--20\,\% tolerance for ceramic capacitors --- precision requires trimming or selection.
+	The datasheet's accuracy figure of 12\,bit ($\approx 0.01\,\%$) refers to the \emph{internal} flying-cap matching, which is preserved as long as the external caps are large enough to act as a low-impedance voltage source/sink at the output. On discrete prototypes with external 0.1\,µF ceramic caps, parasitic tolerance ($5$--$20\,\%$) matters mainly for ripple and settling, not for the gain itself.
