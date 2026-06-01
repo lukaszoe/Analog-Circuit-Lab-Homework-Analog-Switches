@@ -22,67 +22,44 @@ The LTC1043 converts an input frequency to a proportional output voltage. The in
 
 \section{Additional Circuit Analyses (Visual Inspection)}
 
-The following circuits are from the LTspice files \texttt{Diode-Quartet.asc} and \texttt{Switched-C.asc}. They do not contain an LTC1043, but demonstrate other aspects of analog switches and diodes. Analysis by \emph{visual inspection} of the schematics, as recommended by the lab instructor.
+The following circuits are from \texttt{Diode-Quartet.asc} and \texttt{Switched-C.asc}. They do not use the LTC1043, but show other aspects of analog switches and diodes. Analysis by visual inspection of the schematics, as recommended by the lab instructor.
 
 \subsection{Diode-Quartet (Diode-Quartet.asc)}
 
 \subsubsection{Topology and Components}
 
-Six diodes (D1--D6), $\pm 5\,\text{V}$ supply, AC voltage $V_3 = \text{SINE}(0,\,1,\,1\,\text{MHz})$ with AC\,1, $R_1 = R_2 = 50\,\Omega$, current sources $I_1 = I_2 = 10\,\text{mA}$, and $V_6 = +5\,\text{V}$, $V_7 = -5\,\text{V}$.
+The file contains six diodes (D1--D6), a $\pm 5\,\text{V}$ supply, an AC source $V_3 = \text{SINE}(0,\,1,\,1\,\text{MHz})$, two 50\,$\Omega$ resistors, two 10\,mA current sources, and two additional 5\,V sources for clamping.
 
 \subsubsection{Circuit Analysis}
 
-\textbf{Diode bridge (D1--D4):} Full-wave bridge rectifier (Graetz circuit). Positive half-cycle: D1/D2 conduct, D3/D4 block. Negative half-cycle: D3/D4 conduct, D1/D2 block. Result: rectified current through the load, independent of input polarity.
+D1 through D4 form a classic full-wave bridge rectifier. During the positive half-cycle of the input, D1 and D2 conduct while D3 and D4 block; in the negative half-cycle, D3 and D4 take over. Either way, current flows through the load in the same direction. The 50\,$\Omega$ resistors on input and output are typical source and load impedances for a 50\,$\Omega$ system.
 
-\textbf{Input:} $V_3$ provides 1\,V at 1\,MHz. $R_1 = 50\,\Omega$ --- typical 50\,$\Omega$ source impedance, limits input current.
+D5 and D6 sit in parallel with the bridge and act as clippers together with the auxiliary 5\,V sources. The output is therefore clamped to roughly $\pm 5.7\,\text{V}$, protecting whatever follows the rectifier.
 
-\textbf{Output:} $R_2 = 50\,\Omega$ at node \texttt{V\_out}. Rectified envelope minus $\approx 2 \times 0.7\,\text{V}$ diode drop per half-cycle.
+The 10\,mA current sources most likely provide bias for the diodes, which makes the forward-voltage drop more predictable than without bias. At 1\,MHz, real silicon diodes would struggle; Schottky diodes would be the better choice for this frequency.
 
-\textbf{D5 and D6:} Together with $V_6 = +5\,\text{V}$ and $V_7 = -5\,\text{V}$ they act as clippers: D5 conducts when $V_{\text{out}} > +5\,\text{V} - V_D$, D6 when $V_{\text{out}} < -5\,\text{V} + V_D$. Output is clamped to approximately $[-5.7\,\text{V},\,+5.7\,\text{V}]$.
-
-\textbf{Current sources $I_1$ and $I_2$:} Each provides 10\,mA DC --- likely bias current for the diodes, making the voltage drop better defined.
-
-\textbf{Fourier analysis:} \texttt{.four 1meg 10 -1 V(n004) V(V\_in) V(V\_out)} --- THD determination of the rectifier. An ideal full-wave rectifier produces only even harmonics (2f, 4f, \ldots).
-
-Full-wave rectifier with 50\,$\Omega$ matching and clipper protection. At 1\,MHz, Schottky diodes would be ideal (low forward voltage, fast recovery).
+The simulation runs a Fourier analysis at 1\,MHz with ten harmonics, which would let one determine the THD of the rectifier. An ideal full-wave rectifier should produce only even harmonics.
 
 \subsection{Switched Capacitor (Switched-C.asc)}
 
 \subsubsection{Topology and Components}
 
-\begin{itemize}
-\item $V_1$: \texttt{PWL(0 -1 1m -1 1.001m 1)} --- step from $-1\,\text{V}$ to $+1\,\text{V}$ at $t = 1\,\text{ms}$
-\item S1: Voltage-controlled switch (\texttt{.model sw sw()}) --- ideal, 0/1 threshold
-\item $V_2$: \texttt{PWL(0 1 2m 1 5m 4)} --- control voltage, $>1\,\text{V}$ = switch closed
-\item $C_2 = 1\,\mu\text{F}$, IC=0; $R_1 = 100\,\Omega$
-\end{itemize}
+The file contains a step-voltage source $V_1$ that switches from $-1$ to $+1\,\text{V}$ at $t = 1\,\text{ms}$, an ideal voltage-controlled switch S1, a control source $V_2$ that ramps from 1 to 4\,V, a 1\,µF capacitor $C_2$, and a 100\,$\Omega$ series resistor $R_1$.
 
 \subsubsection{Circuit Analysis}
 
-\textbf{Operation:}
-\begin{enumerate}
-\item Switch closed: $V_1$ connected to $C_2$ via $R_1$. $\tau = R_1 \cdot C_2 = 100\,\mu\text{s}$. After $5\tau = 500\,\mu\text{s}$, $C_2$ is charged to over 99\,\%.
-\item Switch open: charge on $C_2$ is preserved, $V_{\text{out}}$ holds the last value.
-\end{enumerate}
+When the switch is closed, $C_2$ charges towards $V_1$ through $R_1$ with a time constant of 100\,µs. After about five time constants, $C_2$ has settled to over 99\,\% of $V_1$. When the switch opens, the charge on $C_2$ is held --- the output keeps its last value until the switch closes again.
 
-\textbf{Signal flow:} $t < 1\,\text{ms}$: $V_1 = -1\,\text{V}$, switch closed, $C_2 \to -1\,\text{V}$. At $t = 1\,\text{ms}$: $V_1$ steps to $+1\,\text{V}$, $C_2$ recharges (RC delay). Until $t = 5\,\text{ms}$: switch remains closed, $V_2$ slowly rises from 1 to 4\,V (does not affect switch state).
+This is the same basic principle the LTC1043 uses, just stripped down to one switch and one capacitor. The LTC1043 toggles two internal flying capacitors with its own oscillator; here the switch is controlled manually by $V_2$ and only one capacitor is involved.
 
-\textbf{Relation to the LTC1043:} Same basic idea --- except the LTC1043 switches automatically with its oscillator and alternates between two capacitors (flying capacitor). Here: single switch, single capacitor, isolated principle.
+If the switch were toggled periodically at some clock rate $f_{\text{clk}}$, the network would behave like an equivalent resistor of $R_{\text{eq}} = 1 / (f_{\text{clk}} \cdot C_2)$. For the values in the schematic, $R_{\text{eq}}$ would equal $R_1 = 100\,\Omega$ at roughly 10\,kHz, which is the classic switched-capacitor resistor equivalence.
 
-\textbf{Equivalent resistance:} With periodic switching at $f_{\text{clk}}$: $R_{\text{eq}} = 1 / (f_{\text{clk}} \cdot C_2)$. With $C_2 = 1\,\mu\text{F}$ and $f_{\text{clk}} = 10\,\text{kHz}$, $R_{\text{eq}} = 100\,\Omega$ --- exactly $R_1$. This is how a switched capacitor can replace a physical resistor.
-
-\textbf{Note on control voltage:} $V_2$ ramps from 1 to 4\,V instead of switching --- presumably a test of whether the switch shows different $R_{\text{on}}$ at different control voltages (for real MOS switches: higher $V_{\text{GS}}$ $\to$ lower $R_{\text{on}}$). The \texttt{sw sw()} model is ideal, however, so there is no effect in this simulation.
+The slow ramp of $V_2$ from 1 to 4\,V suggests the original author wanted to test whether the switch's on-resistance depends on its control voltage --- something a real MOSFET would show, but not the ideal model used here.
 
 \subsection{Notes on Interpreting the Triangle Symbols}
 
-The lab instructor suggests looking at the triangle symbol --- amplifier or comparator?
+The lab instructor pointed out that the triangle symbol could be an amplifier or a comparator. In LTspice, both look identical.
 
-In LTspice, both look identical. The difference:
-\begin{itemize}
-\item Op-amp: has negative feedback (output connected to inverting input), output is analog/linear
-\item Comparator: no negative feedback, output is digital (switches to $V^+$ or $V^-$)
-\end{itemize}
+The way to tell them apart is by the surrounding circuit. An op-amp always has negative feedback --- the output is wired back to the inverting input --- and the output is an analog voltage. A comparator has no such feedback, and its output swings between the supply rails as a digital signal.
 
-In the circuits under consideration: \texttt{1043-D2.asc} and \texttt{1043-M2.asc} have analog outputs $\to$ amplifiers. \texttt{Diode-Quartet.asc} and \texttt{Switched-C.asc} contain no triangle symbol.
-
-Rule of thumb: negative feedback $\to$ op-amp. No negative feedback $\to$ likely a comparator. An op-amp without negative feedback can work as a comparator (but slowly); a comparator with negative feedback oscillates.
+In the four files considered here, only the LTC1043 schematics contain a triangle symbol (inside the IC block), and those are clearly amplifiers since the output is an analog voltage. The other two schematics use only discrete components, so the question doesn't arise.
